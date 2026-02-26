@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symulator Sofizmatów - Gra Edukacyjna</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --primary-light: #dbeafe;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --bg-dark: #0f172a;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px 30px;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+
+        .meters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .meter {
+            background: var(--gray-50);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .meter.merit { border-left-color: #8b5cf6; }
+        .meter.popularity { border-left-color: #ec4899; }
+        .meter.inoculation { border-left-color: #f59e0b; }
+
+        .meter-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .meter-bar {
+            background: var(--gray-200);
+            height: 10px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            transition: width 0.3s ease;
+        }
+
+        .meter.popularity .meter-fill {
+            background: linear-gradient(90deg, #ec4899, #f59e0b);
+        }
+
+        .meter.inoculation .meter-fill {
+            background: linear-gradient(90deg, #f59e0b, #10b981);
+        }
+
+        .meter-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            margin-bottom: 12px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .narrator-card {
+            background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-700) 100%);
+            color: white;
+            border: none;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 25px;
+        }
+
+        .narrator-card p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+        }
+
+        .narrator-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .narrator-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+        }
+
+        .narrator-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.bronze { background: #fcd34d; color: #78350f; }
+        .badge.silver { background: #e5e7eb; color: #374151; }
+        .badge.gold { background: #fef3c7; color: #92400e; }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--gray-300);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .option {
+            background: var(--gray-50);
+            border: 2px solid var(--border);
+            padding: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .option-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .option-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #fce7f3 100%);
+            border: 2px solid var(--primary);
+            text-align: center;
+            padding: 40px 30px;
+            margin: 20px 0;
+        }
+
+        .profile-card h2 {
+            font-size: 28px;
+            margin: 20px 0;
+            color: var(--primary-dark);
+        }
+
+        .profile-icon {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        .profile-card p {
+            font-size: 15px;
+            line-height: 1.8;
+            margin: 15px 0;
+            color: var(--text-primary);
+        }
+
+        .reflection-card {
+            background: var(--gray-50);
+            border-left: 4px solid var(--primary);
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .reflection-card p {
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .fallacy-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fallacy-item:last-child {
+            border-bottom: none;
+        }
+
+        .fallacy-name {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .fallacy-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .progress {
+            background: var(--gray-200);
+            height: 4px;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s ease;
+        }
+
+        .context-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .context-box strong {
+            color: var(--primary-dark);
+        }
+
+        .feedback {
+            background: var(--success);
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .feedback.error {
+            background: var(--danger);
+        }
+
+        .feedback.warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .history-item {
+            background: var(--gray-50);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            background: var(--gray-50);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .category-intro {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #fce7f3 100%);
+            border: 2px solid var(--primary);
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .category-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .meters {
+                grid-template-columns: 1fr;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Symulator Sofizmatów</h1>
+            <p>Edukacyjna gra o logicznych błędach w polityce społecznej</p>
+        </div>
+
+        <div class="content" id="app-content">
+            <div class="card">
+                <h2>Ładowanie gry...</h2>
+                <p>Trwa przygotowanie scenariuszy. Proszę czekać.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Słownik Sofizmatów</h2>
+            <div id="fallacies-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Embed scenarios data directly
+        const SCENARIOS_DATA = {"meta": {"version": "2.0", "title": "Sofizmaty w polityce społecznej", "totalScenarios": 20, "categoriesCount": 5, "scenariosPerCategory": 4}, "categories": [{"id": "emotions", "name": "Manipulacja emocjami", "description": "Wykorzystywanie uczuć zamiast dowodów w argumentach dotyczących polityki społecznej. Emocje mogą uzupełniać argumentację, ale nie powinny jej zastępować.", "badgeName": "Odkrywca emocji", "color": "#ef4444", "fallacies": ["Argumentum ad misericordiam (odwołanie do litości)", "Argumentum ad metum (odwołanie do strachu)", "Argumentum ad populum (odwołanie do większości)"], "scenarios": [{"id": "emo_det_1", "mode": "detective", "domain": "migracyjna", "topic": "Program integracji uchodźców", "context": "Debata w komisji sejmowej dotycząca finansowania programu integracji uchodźców. Poseł partii opozycyjnej zabiera głos w dyskusji o budżecie programu.", "argument": "Wyobraźcie sobie te biedne dzieci, które uciekły przed wojną, nie znają języka, siedzą same w obcym kraju. Jak możecie patrzeć im w oczy i mówić, że nie dajecie pieniędzy na ten program? Kto z was jest w stanie powiedzieć płaczącemu dziecku: nie pomożemy ci?", "fallacy": "Argumentum ad misericordiam (odwołanie do litości)", "fallacyExplanation": "Argument odwołuje się wyłącznie do emocji (litości wobec dzieci), pomijając kluczowe pytania merytoryczne: jaka jest skuteczność programu, ile kosztuje, jakie ma wymierne rezultaty, czy istnieją lepsze alternatywy. Emocjonalny obraz płaczącego dziecka zastępuje analizę efektywności wydatków publicznych.", "contextSensitivity": {"level": "medium", "validWhen": "Odwołanie do cierpienia uchodźców jest uzasadnione jako uzupełnienie merytorycznych argumentów — np. gdy towarzyszy mu analiza skuteczności programu, dane o potrzebach czy porównanie z innymi rozwiązaniami.", "invalidBecause": "W tym przypadku emocje całkowicie zastępują analizę — mówca nie podaje żadnych danych o skuteczności programu, jego kosztach czy rezultatach, a zamiast tego wywiera presję emocjonalną na oponentów."}, "responses": {"substantive": {"text": "Takie podejście unika konkretnych pytań: czy program faktycznie pomaga uchodźcom się integrować? Jakie mamy mierniki sukcesu? Czy fundusze idą na rzeczy, które rzeczywiście przynoszą rezultaty? Litość jest ważna, ale nie powinna być podstawą decyzji budżetowych.", "merit": 16, "popularity": 4, "explanation": "Odpowiedź merytoryczna: nie ignoruje emocji ani problemu, ale przenosi dyskusję na grunt danych. Szanuje intencje mówcy, jednocześnie wskazując na potrzebę evidence-based policy.", "reactions": ["Nudne dane zamiast ludzkiego podejścia...", "W sumie ma rację, potrzebujemy faktów.", "Typowy technokrata, zero empatii."], "inoculation": 10}, "eristic": {"text": "To manipulacja emocjami! Polityk atakuje uczucia, zamiast mówić o rzeczywistych efektach programu. Czy program rzeczywiście funkcjonuje? Ile kosztuje? Jakie są wyniki? To pytania, które zostały całkowicie zignorowane.", "merit": 4, "popularity": 16, "explanation": "Odpowiedź erystyczna: atakuje wiarygodność mówcy (tu quoque / ad personam) zamiast odnosić się do meritum. Może być skuteczna retorycznie, ale nie wnosi niczego do dyskusji o programie.", "reactions": ["Ooo, mocne! Trzeba było tak od razu!", "Hipokryzja obnażona!", "To nie jest odpowiedź na pytanie o budżet..."], "inoculation": 10}, "fallacious": {"text": "Oczywiście chcemy pomagać dzieciom, ale suchość liczb nie oznacza braku serca. Możemy być współczujący i jednocześnie pytać: czy te pieniądze trafiają tam, gdzie powinny? Czy program naprawdę się sprawdza?", "merit": 2, "popularity": 21, "explanation": "Odpowiedź zawiera argument ad populum (odwołanie do większości) połączony z atakiem ad personam (kto jest przeciw, nie ma serca). Zamiast argumentów merytorycznych, wywiera presję społeczną i moralną.", "reactions": ["Dokładnie! Kto jest przeciw, powinien się wstydzić!", "Ale to nie o empatię chodzi, tylko o budżet...", "75% popiera? Skąd te dane?"], "inoculation": 7}}}, {"id": "emo_det_2", "mode": "detective", "domain": "zdrowotna", "topic": "Finansowanie in vitro z budżetu", "context": "Dyskusja w mediach społecznościowych pod artykułem o propozycji rozszerzenia programu refundacji procedury in vitro. Komentator pisze wpis, który zdobywa dużo reakcji.", "argument": "Czy chcecie, żeby Polska wymarła?! Jeśli nie będziemy finansować in vitro, za 30 lat nie będzie komu płacić naszych emerytur, szpitale będą puste, a polskie miasta zamienią się w wyludnione pustynie. Każdy kto jest przeciw, skazuje Polskę na zagładę demograficzną!", "fallacy": "Argumentum ad metum (odwołanie do strachu)", "fallacyExplanation": "Argument wykorzystuje strach przed katastrofą demograficzną, prezentując skrajnie przesadzony scenariusz (wyludnione pustynie) bez dowodów. Uwaga: ten argument zawiera kilka sofizmatów jednocześnie — łączy odwołanie do strachu (dominujący sofizmat) z fałszywą alternatywą (albo finansujemy in vitro, albo zagłada) i argumentem równi pochyłej (brak refundacji → wymarcie). Jeśli wybrałeś argument równi pochyłej lub fałszywą alternatywę — to też trafna obserwacja, ale dominującą techniką jest strach. Pomija fakt, że polityka demograficzna obejmuje wiele narzędzi.", "contextSensitivity": {"level": "low", "validWhen": "Argumenty demograficzne mogą być uzasadnione, gdy opierają się na konkretnych projekcjach GUS, porównaniach międzynarodowych i analizie wpływu konkretnych programów na dzietność.", "invalidBecause": "Ten argument jest jawną manipulacją emocjonalną — używa apokaliptycznych wizji (pustynie, zagłada) bez jakichkolwiek danych, a każdy sprzeciw etykietuje jako skazanie narodu na wymarcie."}, "responses": {"substantive": {"text": "Taki argument opiera się na strachu przed katastrofą demograficzną, ale pomija istotne pytania: jakie są faktyczne projekcje GUS dotyczące demografii? Jakie inne narzędzia polityki prorodzinnej istnieją? Jaka jest rzeczywista skuteczność in vitro w kontekście demografii? Strach nie powinien zastępować analizy danych.", "merit": 15, "popularity": 5, "explanation": "Odpowiedź merytoryczna: nie bagatelizuje problemu demograficznego, ale przenosi dyskusję z apokaliptycznych wizji na grunt danych i porównań. Wskazuje na złożoność tematu.", "reactions": ["Ale nuuuda, a ludzie wymierają!", "Rzetelne podejście, szacunek.", "Za dużo analiz, za mało działania."], "inoculation": 10}, "eristic": {"text": "Wyludnione pustynie? Serio? Może jeszcze meteoryty spadną na Polskę, jeśli nie przegłosujemy refundacji? Taki straszak to czysta manipulacja — zero danych, za to dużo paniki. Pokażcie konkretne projekcje demograficzne zamiast apokaliptycznych wizji!", "merit": 5, "popularity": 15, "explanation": "Odpowiedź erystyczna: trafnie wyśmiewa przesadę argumentu (pustynie, zagłada), ale redukcja ad absurdum nie zastępuje merytorycznej analizy. Skuteczna retorycznie, ale nie wnosi treści o samym programie in vitro.", "reactions": ["Haha, meteoryty! Dobre!", "Śmiech zamiast argumentów...", "Ale trafne, ten post to totalna histeria."], "inoculation": 10}, "fallacious": {"text": "Znam dwie pary, które przeszły in vitro — u jednej nie zadziałało, u drugiej dziecko ma problemy zdrowotne. Zamiast wydawać miliony na niepewną procedurę, lepiej wspierać rodziny naturalnie: dłuższe urlopy, tańsze mieszkania, żłobki.", "merit": 3, "popularity": 20, "explanation": "Odpowiedź opiera się na dowodzie anegdotycznym — dwa przypadki nie mogą być podstawą oceny procedury medycznej o udokumentowanej skuteczności (~30-40% na cykl). Fałszywa alternatywa: in vitro i wsparcie rodzin to nie wykluczające się opcje.", "reactions": ["U mojej znajomej też nie zadziałało!", "A statystyki mówią co innego...", "Naturalne metody najlepsze!"], "inoculation": 7}}}, {"id": "emo_spin_1", "mode": "spin-doctor", "domain": "edukacyjna", "topic": "Likwidacja małych szkół wiejskich", "briefing": "Jesteś doradcą medialnym wójta gminy, który chce zlikwidować trzy małe szkoły wiejskie i dowozić dzieci do szkoły gminnej w celu oszczędności budżetowych. Twój szef potrzebuje argumentu na zebranie z rodzicami. Wykorzystaj techniki manipulacji emocjonalnej.", "targetFallacyCategory": "emotions", "options": [{"id": "fear", "technique": "Argumentum ad metum (odwołanie do strachu)", "text": "Jeśli nie zamkniemy tych szkół, gmina zbankrutuje w ciągu dwóch lat. Nie będzie pieniędzy na remonty dróg, na oświetlenie ulic, na odśnieżanie. Wasze dzieci będą chodziły do szkoły w budynku, który się dosłownie rozsypie, bo nie będzie pieniędzy na remonty!", "meritDamage": 2, "popularityGain": 16, "inoculationGain": 12, "expertDebunking": "Ten argument wykorzystuje strach przed bankructwem gminy i niebezpiecznym budynkiem szkoły, prezentując skrajny scenariusz bez konkretnych danych finansowych. Nie podaje rzeczywistego deficytu, nie porównuje kosztów utrzymania szkół z kosztami dowozu, nie uwzględnia dotacji oświatowej z budżetu państwa.", "reactions": ["Ale straszenie! A ile konkretnie brakuje w budżecie?", "Lepiej zamknąć szkołę niż czekać, aż się zawali!", "Typowa manipulacja, żeby przeforsować swoją decyzję."]}, {"id": "pity", "technique": "Argumentum ad misericordiam (odwołanie do litości)", "text": "Pomyślcie o nauczycielach w szkole gminnej, którzy pracują w przepełnionych klasach z 35 uczniami. Oni ledwo dają radę, a my utrzymujemy szkoły z 12 uczniami. To niesprawiedliwe wobec tych ciężko pracujących nauczycieli i ich uczniów!", "meritDamage": 5, "popularityGain": 14, "inoculationGain": 11, "expertDebunking": "Argument odwołuje się do litości wobec nauczycieli w dużej szkole, tworząc fałszywą opozycję: albo małe szkoły, albo komfort nauczycieli w dużej. W rzeczywistości problem przepełnionych klas wymaga osobnego rozwiązania (np. dodatkowego etatu), a nie likwidacji innych placówek.", "reactions": ["A o naszych dzieciach ze wsi kto pomyśli?", "Prawda, nauczyciele mają ciężko.", "To nie jest albo-albo, można rozwiązać oba problemy."]}, {"id": "weak", "technique": "Argument pozornie racjonalny", "text": "Likwidacja tych szkół jest konieczna ze względów budżetowych. Szkoły elitarne konsumują duże zasoby, które mogą być lepiej podzielone. Edukacja powinna być bardziej egalitarna niż skoncentrowana na wyborze. To pragmatyczne podejście do ograniczeń budżetowych.", "meritDamage": 12, "popularityGain": 10, "inoculationGain": 8, "expertDebunking": "Argument wydaje się racjonalny — o budżecie i równości — ale jest słaby, ponieważ nie bierze pod uwagę korzyści płynących z wyspecjalizowanej edukacji, nie porównuje rzeczywistych kosztów i nie pokazuje, że budżet szkolny jest właściwym miejscem cięć. Pozorna racjonalność maskuje uproszczony obraz problemu.", "reactions": ["I to tyle wyjaśnień?", "Bo tak zdecydowaliście? A nas nikt nie pytał!", "Zero argumentów, zero szacunku."]}]}, {"id": "emo_ctx_1", "mode": "context-judge", "domain": "ubezpieczen_spolecznych", "topic": "Reforma systemu rent", "context": "Debata w Senacie nad zmianami w systemie orzekania o niepełnosprawności. Senator zabiera głos w dyskusji o zaostrzeniu kryteriów przyznawania rent.", "argument": "Nie możemy ignorować cierpienia osób z niepełnosprawnościami, które po wieloletniej pracy tracą zdrowie i zdolność do zarobkowania. Dane ZUS pokazują, że 40% nowych rencistów to osoby po 50. roku życia z chorobami układu ruchu. Ta reforma musi uwzględniać ich realną sytuację zdrowotną i ekonomiczną.", "isActuallySophism": false, "fallacyIfSophism": null, "explanation": "To NIE jest sofizmat. Odwołanie do cierpienia jest tu uzasadnione, ponieważ: (1) jest bezpośrednio powiązane z omawianym tematem (reforma rent dotyczy właśnie osób cierpiących), (2) jest poparte konkretnymi danymi (40% nowych rencistów po 50. roku życia), (3) nie zastępuje argumentacji, lecz ją uzupełnia — mówca formułuje konkretny postulat (uwzględnienie sytuacji zdrowotnej i ekonomicznej).", "ifCalledSophism": "Uwaga! Nie każde odwołanie do emocji jest sofizmatem. W tym przypadku emocje są proporcjonalne do tematu (reforma rent dotyczy ludzi cierpiących), poparte danymi ZUS i towarzyszą konkretnemu postulatowi. To uzasadnione połączenie empatii z argumentacją merytoryczną.", "ifCalledLegitimate": "Dobrze rozpoznajesz różnicę! Kluczowe czynniki: (1) emocje dotyczą bezpośrednio omawianego problemu, (2) argumentowi towarzyszą konkretne dane, (3) mówca formułuje merytoryczny postulat, nie tylko apeluje do uczuć.", "contextFactors": ["Emocje bezpośrednio związane z tematem debaty (renty dotyczą osób cierpiących)", "Argument poparty konkretnymi danymi statystycznymi (40% rencistów, ZUS)", "Mówca formułuje merytoryczny postulat, a emocje go uzupełniają, nie zastępują"], "inoculationGain": 10, "kpiCorrect": {"merit": 12, "popularity": 8, "inoculation": 10}, "kpiIncorrect": {"merit": 4, "popularity": 12, "inoculation": 4}}]}, {"id": "attacks", "name": "Ataki na osobę i autorytet", "description": "Podważanie osoby przedstawiającej argument zamiast odnoszenia się do jego treści. Krytyka nadawcy może być zasadna, ale nie powinna zastępować merytorycznej polemiki.", "badgeName": "Tropiciel ad personam", "color": "#f97316", "fallacies": ["Argumentum ad personam (atak personalny)", "Tu quoque (ty także)", "Argumentum ad verecundiam (nieuprawnione odwołanie do autorytetu)"], "scenarios": [{"id": "att_det_1", "mode": "detective", "domain": "mieszkaniowa", "topic": "Program Mieszkanie Plus", "context": "Dyskusja na Twitterze/X o rządowym programie budowy tanich mieszkań. Ekspert ds. nieruchomości publikuje krytyczną analizę programu. W odpowiedzi pojawia się popularny komentarz.", "argument": "Ten tzw. 'ekspert' sam ma trzy mieszkania na wynajem i zarabia na drożyźnie. Jasne, że krytykuje program tanich mieszkań — bo konkurencja mu się nie podoba! Nie słuchajcie go, on broni własnego portfela, a nie waszych interesów.", "fallacy": "Argumentum ad personam (atak personalny)", "fallacyExplanation": "Komentarz atakuje osobę eksperta (jego sytuację majątkową i domniemane motywacje) zamiast odnosić się do treści jego analizy. Nawet jeśli ekspert ma mieszkania na wynajem, jego argumenty merytoryczne mogą być trafne lub nie — to należy oceniać niezależnie od osoby autora.", "contextSensitivity": {"level": "medium", "validWhen": "Ujawnienie konfliktu interesów eksperta jest uzasadnione jako dodatkowa informacja dla odbiorców — ale powinno towarzyszyć merytorycznej ocenie argumentów, a nie ją zastępować.", "invalidBecause": "W tym przypadku cała odpowiedź skupia się na osobie eksperta i jego domniemanych motywacjach. Ani jedno zdanie nie odnosi się do treści analizy. Wezwanie 'nie słuchajcie go' wprost zachęca do ignorowania argumentów na podstawie osoby, nie treści."}, "responses": {"substantive": {"text": "Konflikt interesów eksperta warto odnotować, ale to nie zwalnia z analizy jego argumentów. Co konkretnie mówi ta analiza programu Mieszkanie Plus? Jakie dane przytacza? Nawet jeśli autor ma mieszkania na wynajem, jego zarzuty merytoryczne mogą być trafne lub nie — to trzeba ocenić niezależnie od osoby.", "merit": 16, "popularity": 4, "explanation": "Odpowiedź uznaje potencjalny konflikt interesów, ale słusznie kieruje dyskusję z powrotem na meritum analizy. Zachęca do krytycznej oceny argumentów, niezależnie od osoby autora.", "reactions": ["Fakty nie mają właściciela — ważne co mówi, nie kto.", "Ale łatwo mówić, jak się nie wynajmuje...", "Nudne, wolę wiedzieć kto za tym stoi!"], "inoculation": 10}, "eristic": {"text": "Zamiast odnieść się do danych z analizy, autor atakuje eksperta personalnie. Ile mieszkań ma ekspert, nie zmienia faktów o programie Mieszkanie Plus. Może zamiast tropić czyjeś nieruchomości, przeczytaj samą analizę?", "merit": 5, "popularity": 15, "explanation": "Odpowiedź trafnie wskazuje na ad personam, ale sama stosuje lekceważący ton wobec komentującego. Retoryczne judo — odwraca atak, ale nie wnosi argumentów merytorycznych za czy przeciw programowi.", "reactions": ["Ooo, zwrotka! Niezła!", "Obaj atakujecie osoby zamiast argumentów...", "BURN! To było dobre!"], "inoculation": 10}, "fallacious": {"text": "Nie słuchajmy anonimowych komentatorów w internecie — profesor nieruchomości z SGH opublikował znacznie rzetelniejszą analizę. Ekspert to bloger z mieszkaniami, a nie naukowiec. Prawdziwi specjaliści popierają program.", "merit": 3, "popularity": 20, "explanation": "Odpowiedź zawiera odwołanie do fałszywego autorytetu (profesor z SGH bez cytowania konkretnych tez) oraz atak ad personam (deprecjonowanie eksperta jako 'blogera'). Nie odnosi się do meritum żadnej z analiz.", "reactions": ["Profesor kontra bloger? Wiadomo kto wygrywa!", "A co konkretnie powiedział ten profesor?", "Argument z autorytetu to też błąd logiczny..."], "inoculation": 7}}}, {"id": "att_det_2", "mode": "detective", "domain": "edukacyjna", "topic": "Edukacja seksualna w szkołach", "context": "Rada rodziców dyskutuje o wprowadzeniu zajęć z edukacji seksualnej zgodnych z wytycznymi WHO. Jeden z rodziców zabiera głos.", "argument": "A co wy, zwolennicy tych zajęć, robiliście, gdy wasze dzieci miały problemy w szkole? Pamiętam, że pani Kowalska nie przychodziła na wywiadówki, a pan Nowak sam przyznał, że nie kontroluje, ile czasu syn spędza w internecie. I teraz nagle jesteście ekspertami od wychowania?", "fallacy": "Tu quoque (ty także)", "fallacyExplanation": "Argument odwraca uwagę od tematu (edukacja seksualna) na domniemane wady rodziców, którzy popierają te zajęcia. Błędy wychowawcze rodziców nie mają związku z merytoryczną oceną programu edukacji seksualnej — nawet niedoskonały rodzic może mieć rację w kwestii potrzeby edukacji seksualnej.", "contextSensitivity": {"level": "low", "validWhen": "Pytanie o wiarygodność i konsekwencję rodziców mogłoby być uzasadnione, gdyby dotyczyło ich kompetencji do prowadzenia tych zajęć — ale tutaj chodzi o poparcie programu prowadzonego przez profesjonalistów.", "invalidBecause": "Argument w pełni ignoruje meritum (jakość programu, dowody naukowe, wytyczne WHO) i skupia się wyłącznie na rzekomych wadach oponentów. To klasyczne tu quoque — zamiast odpowiadać na argument, atakujesz konsekwencję osoby go przedstawiającej."}, "responses": {"substantive": {"text": "Wychowawcze niedociągnięcia rodziców nie mają związku z oceną programu edukacji seksualnej. Pytania merytoryczne to: czy program jest zgodny z wytycznymi WHO? Jakie są dowody na skuteczność takiej edukacji? Jakie efekty przyniosła w innych krajach? Zamiast personalnych wycieczek, rozmawiajmy o programie.", "merit": 15, "popularity": 5, "explanation": "Odpowiedź nie atakuje mówcy, dyplomatycznie przekierowuje dyskusję na meritum programu edukacji seksualnej. Zachęca do oceny konkretnych treści zamiast kompetencji poszczególnych rodziców.", "reactions": ["Mądre słowa, ale nudne jak flaki z olejem.", "Wreszcie ktoś mówi o programie, a nie o sobie nawzajem!", "Łatwo być dyplomatą, gdy cię nie atakują."], "inoculation": 10}, "eristic": {"text": "Chwila — to jest rada rodziców czy grupa do wzajemnego obgadywania? Pani Kowalska nie była na wywiadówce, więc edukacja seksualna jest zła? Jaki to ma związek? Może wróćmy do tematu zamiast prać brudne rodzinne sprawy?", "merit": 6, "popularity": 14, "explanation": "Ironia i sarkazm — odpowiedź celnie punktuje absurdalność personalizacji dyskusji, ale sama nie wnosi żadnych argumentów merytorycznych za czy przeciw programowi edukacji seksualnej.", "reactions": ["Haha, grupa do obgadywania! Dobre!", "Też kpina zamiast argumentów...", "Przynajmniej zabawne, w przeciwieństwie do tego zebrania."], "inoculation": 10}, "fallacious": {"text": "Wszyscy wiemy, że większość rodziców nie rozmawia z dziećmi o seksie — badania pokazują, że 80% nastolatków uczy się z internetu. Skoro rodzice nie dają rady, szkoła musi to robić za nich. To oczywiste.", "merit": 3, "popularity": 19, "explanation": "Odpowiedź zawiera ad populum ('wszyscy wiemy') i powołuje się na niesprecyzowane 'badania' bez źródła. Statystyka '80%' wydaje się zmyślona. Choć teza może być słuszna, sposób jej uzasadnienia jest manipulacyjny.", "reactions": ["80%? Skąd ta liczba?", "W sumie chyba mało kto rozmawia o tym z dziećmi...", "Jakie konkretnie badania to potwierdzają?"], "inoculation": 8}}}, {"id": "att_spin_1", "mode": "spin-doctor", "domain": "migracyjna", "topic": "Zasiłki dla cudzoziemców", "briefing": "Jesteś specjalistą od mediów społecznościowych polityka, który sprzeciwia się przyznawaniu zasiłków socjalnych cudzoziemcom z pozwoleniem na pobyt. Musisz napisać post na media społecznościowe, który zdyskredytuje badaczkę, która opublikowała raport wykazujący pozytywne skutki ekonomiczne integracji migrantów. Wykorzystaj techniki ataku na osobę i źródło.", "targetFallacyCategory": "attacks", "options": [{"id": "ad_hominem", "technique": "Argumentum ad personam (atak personalny)", "text": "Dr Wiśniewska dostaje granty z UE na badania nad migracją — oczywiście, że jej wyniki są pozytywne! Kto płaci, ten wymaga. Zamiast słuchać naukowców na pasku Brukseli, popatrzmy na realia w naszych osiedlach!", "meritDamage": 2, "popularityGain": 17, "inoculationGain": 11, "expertDebunking": "Klasyczny atak ad personam podważający motywacje badaczki zamiast treści raportu. Granty UE przechodzą procedury peer review i audytu. Źródło finansowania badań jest jawne, ale nie determinuje automatycznie ich wyników — to dlatego istnieje system recenzji naukowych.", "reactions": ["Granty z UE = propaganda! Jasne!", "A co z peer review? Ktoś sprawdzał te badania...", "Wreszcie ktoś mówi prawdę o tych naukowych lobbystach!"]}, {"id": "tu_quoque", "technique": "Tu quoque (ty także)", "text": "Ciekawe, że dr Wiśniewska mówi o korzyściach z migracji, ale sama mieszka w zamkniętym osiedlu bez żadnych cudzoziemców w sąsiedztwie. Łatwo być tolerancyjnym, gdy to nie ty musisz dzielić klatkę schodową z obcymi!", "meritDamage": 5, "popularityGain": 14, "inoculationGain": 11, "expertDebunking": "Tu quoque — atak na rzekomą hipokryzję badaczki. Nawet gdyby fakty o jej miejscu zamieszkania były prawdziwe, nie mają żadnego wpływu na jakość jej badań naukowych. Naukowiec nie musi osobiście doświadczać zjawiska, żeby je rzetelnie badać.", "reactions": ["Hipokrytka! Sama nie chce migrantów pod nosem!", "Gdzie mieszka nie ma nic do rzeczy z jakością badań...", "To właśnie ten pijący liberalizm!"]}, {"id": "weak", "technique": "Uogólnienie anegdotyczne", "text": "Znałem pracownika, który dostał zasiłek dla cudzoziemca i nigdy nie szukał pracy. Zasiłki przyciągają ludzi, którzy nie chcą pracować. To dowód, że system jest wykorzystywany. Powinniśmy wyeliminować takie programy.", "meritDamage": 12, "popularityGain": 10, "inoculationGain": 8, "expertDebunking": "Jedna historia nie jest dowodem. Anegdota może być szokująca, ale statystyki mogą pokazywać inny obraz — na przykład większość odbiorców faktycznie pracuje lub szuka pracy. Uogólnienie od jednego przypadku do całego systemu jest logicznym błędem, nawet jeśli historia jest rzeczywista.", "reactions": ["OK, ale dlaczego?", "Argumenty jakieś?", "Tak sobie, nic tu nie ma."]}]}, {"id": "att_ctx_1", "mode": "context-judge", "domain": "zdrowotna", "topic": "Refundacja nowych leków onkologicznych", "context": "Debata o włączeniu nowego leku onkologicznego na listę leków refundowanych. W dyskusji pada następujący argument.", "argument": "Profesor Kowalski, kierujący Kliniką Onkologii Dziecięcej i współautor trzech badań klinicznych nad tym lekiem, twierdzi, że refundacja jest uzasadniona na podstawie danych z wieloośrodkowego badania obejmującego 3000 pacjentów.", "isActuallySophism": false, "fallacyIfSophism": null, "explanation": "To NIE jest sofizmat. Odwołanie do autorytetu (argumentum ad verecundiam) jest tu uzasadnione, ponieważ: (1) profesor Kowalski jest ekspertem dokładnie w dziedzinie, o której mowa (onkologia), (2) jego stanowisko jest oparte na konkretnych danych empirycznych (badanie na 3000 pacjentach), (3) badanie jest wieloośrodkowe, co zwiększa jego wiarygodność.", "ifCalledSophism": "Uwaga! Nie każde odwołanie do autorytetu (argumentum ad verecundiam) jest sofizmatem. Jeśli dostrzegasz potencjalny konflikt interesów (profesor jest współautorem badań) — to wartościowa obserwacja krytycznego myślenia. Jednak współautorstwo badań wieloośrodkowych świadczy o ekspertyzie, a wyniki podlegają niezależnej recenzji naukowej (peer review). Profesor Kowalski jest ekspertem w dziedzinie onkologii — dokładnie tej, której dotyczy debata — i powołuje się na konkretne, weryfikowalne dane z badań klinicznych. To przykład POPRAWNEGO odwołania do autorytetu.", "ifCalledLegitimate": "Dobrze! Rozpoznajesz różnicę między uzasadnionym a fałszywym odwołaniem do autorytetu. Kluczowe: ekspertyza w relevantnej dziedzinie + konkretne dane empiryczne + weryfikowalne badanie wieloośrodkowe.", "contextFactors": ["Ekspert jest specjalistą w dokładnie tej dziedzinie (onkologia), której dotyczy argument", "Stanowisko oparte na wieloośrodkowym badaniu klinicznym (3000 pacjentów)", "Dane są weryfikowalne i pochodzą z recenzowanego badania naukowego"], "inoculationGain": 10, "kpiCorrect": {"merit": 12, "popularity": 8, "inoculation": 10}, "kpiIncorrect": {"merit": 4, "popularity": 12, "inoculation": 4}}]}, {"id": "distortion", "name": "Zniekształcanie argumentów", "description": "Przekręcanie, upraszczanie lub karykaturalne przedstawianie stanowiska oponenta, zamiast uczciwego odniesienia się do jego rzeczywistych argumentów.", "badgeName": "Demaskator słomianej kukły", "color": "#8b5cf6", "fallacies": ["Słomiana kukła (straw man)", "Fałszywa alternatywa (fałszywy dylemat)", "Selektywne dobieranie dowodów (cherry picking)"], "scenarios": [{"id": "dist_det_1", "mode": "detective", "domain": "ubezpieczen_spolecznych", "topic": "Podwyższenie wieku emerytalnego", "context": "Dyskusja w programie publicystycznym o propozycji stopniowego podwyższenia wieku emerytalnego. Jeden z panelistów odpowiada na postulat ekonomisty.", "argument": "Ekonomista chce, żebyśmy pracowali do śmierci! Według niego emerytura to luksus, na który Polska nie może sobie pozwolić. Najchętniej zamknąłby ZUS i kazał staruszkom pracować w kopalniach do 80. roku życia!", "fallacy": "Słomiana kukła (straw man)", "fallacyExplanation": "Panelista karykaturalnie zniekształca stanowisko ekonomisty: z propozycji 'stopniowego podwyższenia' robi 'pracę do śmierci' i 'zamknięcie ZUS'. Nikt nie postulował pracy w kopalniach do 80 lat — to celowa przesada, która tworzy łatwiejszy cel do ataku.", "contextSensitivity": {"level": "low", "validWhen": "Krytyka propozycji podwyższenia wieku emerytalnego jest uzasadniona, gdy odnosi się do faktycznych problemów: zdrowia osób starszych, nierówności warunków pracy, rzeczywistych skutków demograficznych.", "invalidBecause": "Panelista w ogóle nie odnosi się do rzeczywistej propozycji. Zamiast tego tworzy karykaturę ('praca do śmierci', 'kopalnie do 80 lat'), którą łatwiej zaatakować. To klasyczna słomiana kukła."}, "responses": {"substantive": {"text": "Panelista zniekształca propozycję ekonomisty: 'stopniowe podwyższenie' to nie 'praca do śmierci'. Warto wrócić do faktycznej treści: o ile miałby wzrosnąć wiek emerytalny? Jakie są dane o zdrowiu osób 65+? Jakie rozwiązania stosują inne kraje? Dyskutujmy o rzeczywistej propozycji, nie o karykaturze.", "merit": 16, "popularity": 4, "explanation": "Odpowiedź precyzyjnie koryguje zniekształcenie (słomianą kukłę), przywracając rzeczywistą treść propozycji ekonomisty. Zachęca do merytorycznej dyskusji nad faktycznym postulatem.", "reactions": ["Ale to nie zmienia faktu, że ludzie nie chcą pracować dłużej!", "Wreszcie ktoś sprostował te bzdury.", "Nudy, wolę emocje od faktów."], "inoculation": 10}, "eristic": {"text": "Kopalnie do 80 lat? Zamknięcie ZUS? Kto to powiedział? Chyba nie ekonomista — bo on mówił o stopniowym podwyższeniu o 2 lata. Może zanim zaatakujemy czyjąś propozycję, najpierw ją przeczytajmy?", "merit": 5, "popularity": 16, "explanation": "Ironia celnie punktuje zniekształcenie, ale sama nie wnosi argumentów merytorycznych. Wyśmiewa oponenta zamiast przedstawić konstruktywną odpowiedź na pytanie o wiek emerytalny.", "reactions": ["Haha, lekcje u twórców memów!", "Śmieszne, ale nie pomaga w dyskusji.", "Złapał go na gorącym uczynku!"], "inoculation": 9}, "fallacious": {"text": "Albo zostawiamy wiek emerytalny bez zmian i bronimy praw pracowników, albo ulegamy lobby pracodawców, którzy chcą nas wyzyskiwać do ostatniego dnia życia. Kto jest za podwyżką wieku emerytalnego, jest wrogiem ludzi pracy.", "merit": 2, "popularity": 21, "explanation": "Odpowiedź zawiera fałszywą alternatywę (albo status quo, albo wyzysk) i atak ad personam (wróg pracowników). Ignoruje całe spektrum możliwych rozwiązań pomiędzy tymi skrajnościami.", "reactions": ["Właśnie! Kto jest za podwyżką wieku, jest wrogiem ludzi pracy!", "Ale to chyba nie jest takie czarno-białe...", "Emocje zamiast argumentów, jak zwykle."], "inoculation": 7}}}, {"id": "dist_det_2", "mode": "detective", "domain": "migracyjna", "topic": "Polityka wizowa", "context": "Debata parlamentarna o ułatwieniach wizowych dla pracowników z wybranych krajów azjatyckich. Poseł opozycji komentuje propozycję rządu.", "argument": "Rząd stawia nas przed prostym wyborem: albo otwieramy granice dla wszystkich, albo nasza gospodarka się załamie. Nie ma żadnej trzeciej drogi. To jest szantaż — albo zgodzicie się na niekontrolowaną imigrację, albo weźmiecie odpowiedzialność za recesję!", "fallacy": "Fałszywa alternatywa", "fallacyExplanation": "Poseł przedstawia wybór między dwoma skrajnościami: 'otwarcie granic dla wszystkich' vs. 'załamanie gospodarcze', ignorując szereg rozwiązań pośrednich: selektywna polityka wizowa, programy dla konkretnych sektorów, dwustronne umowy, limity ilościowe. Propozycja rządu dotyczyła ułatwień dla wybranych krajów i zawodów, nie 'otwarcia granic dla wszystkich'.", "contextSensitivity": {"level": "low", "validWhen": "Krytyka polityki wizowej jest uzasadniona, gdy wskazuje na konkretne ryzyka (np. brak mechanizmów kontroli, niewydolność urzędów, skutki dla rynku pracy) i proponuje alternatywy.", "invalidBecause": "Poseł sztucznie redukuje złożoną kwestię do wyboru binarnego, zniekształcając propozycję rządu (ułatwienia wizowe ≠ otwarcie granic dla wszystkich) i grożąc recesją jako jedyną alternatywą."}, "responses": {"substantive": {"text": "Poseł przedstawia fałszywą alternatywę: 'otwarcie granic dla wszystkich' vs. 'recesja'. Propozycja rządu dotyczy ułatwień wizowych dla wybranych zawodów z wybranych krajów — to nie 'niekontrolowana imigracja'. Między skrajnościami istnieją selektywna polityka wizowa, limity ilościowe i dwustronne umowy.", "merit": 15, "popularity": 5, "explanation": "Odpowiedź precyzyjnie koryguje fałszywą alternatywę, przywraca rzeczywistą treść propozycji rządu i wskazuje na istnienie wielu rozwiązań pośrednich.", "reactions": ["Nudny technokrata, ale ma rację.", "Szczegóły, szczegóły... ludzie chcą jasnych odpowiedzi!", "Wreszcie ktoś mówi o faktycznej propozycji."], "inoculation": 10}, "eristic": {"text": "Otwarcie granic dla wszystkich? Rząd mówi o wizach dla spawaczy i programistów! Następnym razem może poseł przeczyta propozycję, zanim zacznie krzyczeć o recesji? To jak mówić, że kupno roweru to pierwszy krok do wyścigu Formuły 1.", "merit": 5, "popularity": 15, "explanation": "Sprytne odwrócenie — wskazuje na absurdalność skrajnej interpretacji posła. Ale samo nie wnosi merytorycznych argumentów za czy przeciw ułatwieniom wizowym. Retoryczne judo zamiast merytorycznej dyskusji.", "reactions": ["Odwrócił to pięknie!", "Ale sam też nie powiedział co jest w tej propozycji...", "Polityczne judo — niezłe!"], "inoculation": 10}, "fallacious": {"text": "80% Polaków w sondażach sprzeciwia się otwieraniu granic — i mają rację! Głos narodu jest jasny: nie chcemy imigrantów. Rząd powinien słuchać obywateli, a nie brukselskich biurokratów i korporacyjnych lobbystów.", "merit": 3, "popularity": 20, "explanation": "Argument ad populum — odwołanie do sondaży i 'woli narodu' jako rozstrzygającego argumentu w kwestii wymagającej analizy ekonomicznej i prawnej. Popularność poglądu nie świadczy o jego słuszności.", "reactions": ["Naród ma głos! Demokracja!", "Ale politykę gospodarczą robi się na danych, nie na sondażach...", "Typowe populistyczne zagrywki."], "inoculation": 7}}}, {"id": "dist_spin_1", "mode": "spin-doctor", "domain": "zdrowotna", "topic": "Komercjalizacja szpitali publicznych", "briefing": "Jesteś doradcą polityka, który chce zablokować propozycję częściowej komercjalizacji oddziałów szpitali publicznych (model: 80% usług publicznych, 20% komercyjnych, z zysków finansowanie sprzętu). Twoim zadaniem jest zniekształcić tę propozycję tak, aby brzmiała groźnie. Wykorzystaj techniki zniekształcania argumentów.", "targetFallacyCategory": "distortion", "options": [{"id": "straw_man", "technique": "Słomiana kukła (straw man)", "text": "Rząd chce sprywatyzować polską służbę zdrowia! Ich plan to oddanie szpitali w ręce korporacji, które będą leczyć tylko bogatych. Za chwilę za wizytę u lekarza zapłacicie jak za samochód, a biedni zostaną na lodzie!", "meritDamage": 1, "popularityGain": 17, "inoculationGain": 12, "expertDebunking": "Klasyczna słomiana kukła: propozycja 20% komercjalizacji z przeznaczeniem zysków na sprzęt została przekształcona w 'pełną prywatyzację' i 'oddanie szpitali korporacjom'. Zniekształcenie jest na tyle dramatyczne, że łatwo je atakować — ale nie ma nic wspólnego z rzeczywistą propozycją.", "reactions": ["Ręce precz od służby zdrowia!", "Ale to nie o pełną prywatyzację chodzi...", "Korporacje rządzą światem, teraz chcą nasze szpitale!"]}, {"id": "false_dilemma", "technique": "Fałszywa alternatywa", "text": "Mamy tylko dwie opcje: albo zachowamy w pełni publiczną służbę zdrowia, albo zgodzimy się na amerykański model, gdzie bankructwo z powodu rachunków za leczenie jest codziennością. Nie ma czegoś takiego jak 'trochę komercyjny' szpital.", "meritDamage": 5, "popularityGain": 14, "inoculationGain": 11, "expertDebunking": "Fałszywa alternatywa — w rzeczywistości większość krajów europejskich stosuje modele mieszane (Francja, Holandia, Niemcy) z różnym udziałem sektora prywatnego. Twierdzenie, że nie ma czegoś takiego jak 'trochę komercyjny' szpital, jest po prostu nieprawdziwe.", "reactions": ["Nie chcemy być jak Ameryka!", "Ale w Niemczech jakoś działa model mieszany...", "Czarno-białe myślenie, typowe."]}, {"id": "weak", "technique": "Fałszywy kompromis", "text": "Komercjalizacja szpitali to nie całkowita prywatyzacja, tylko partnerstwo publiczno-prywatne. Tym razem będzie to umiarkowane rozwiązanie, które łączy efektywność sektora prywatnego z dostępem publicznym. To złoty środek między dwiema skrajnościami.", "meritDamage": 12, "popularityGain": 10, "inoculationGain": 8, "expertDebunking": "Fałszywy kompromis sugeruje, że rozwiązanie pośrodku jest zawsze lepsze, ale nie zawsze tak jest. Bez szczegółów dotyczących struktury partnerstwa, podziału zysków i gwarancji dostępu, trudno ocenić, czy to naprawdę balans, czy przebrana prywatyzacja ukrywająca się pod pozorem kompromisu.", "reactions": ["Ale DLACZEGO ci się nie podoba?", "Zero argumentów, same opinie.", "Meh."]}]}, {"id": "dist_ctx_1", "mode": "context-judge", "domain": "mieszkaniowa", "topic": "Podatek od pustostanów", "context": "Debata miejska o wprowadzeniu podatku od mieszkań, które stoją puste ponad 12 miesięcy. Radna przedstawia swoją interpretację stanowiska właścicieli nieruchomości.", "argument": "Przeciwnicy tego podatku twierdzą, że władze miejskie nie powinny ingerować w prawo własności. Ale przecież prawo własności nie jest absolutne — kodeks cywilny przewiduje ograniczenia, a Konstytucja mówi o społecznej funkcji własności. Ich argument sprowadza się do tego, że właściciel może robić ze swoją nieruchomością absolutnie wszystko, a tak nie jest.", "isActuallySophism": true, "fallacyIfSophism": "Słomiana kukła (straw man)", "explanation": "To JEST sofizmat (słomiana kukła). Radna zniekształca stanowisko przeciwników: ich argument prawdopodobnie nie brzmi 'właściciel może robić absolutnie wszystko', lecz 'ten konkretny podatek jest nadmierną ingerencją'. Pomiędzy 'absolutną wolnością własności' a 'podatkiem od pustostanów' istnieje szerokie spektrum — radna celowo redukuje stanowisko oponentów do skrajnej wersji.", "ifCalledSophism": "Trafna analiza! Radna celowo przerysowuje stanowisko oponentów. Mają oni prawo argumentować, że konkretny podatek jest nadmierną ingerencją, bez twierdenia, że własność jest absolutna. To subtelne słomiana kukła — trudniejsze do wychwycenia, bo częściowo opiera się na prawdziwych przesłankach (społeczna funkcja własności).", "ifCalledLegitimate": "Warto spojrzeć uważniej. Choć radna ma rację co do społecznej funkcji własności (to prawda), zniekształca stanowisko oponentów — prawdopodobnie nie twierdzą oni, że własność jest absolutna, ale że TEN KONKRETNY podatek jest nadmierny. Redukowanie ich argumentu do skrajnej wersji to słomiana kukła.", "contextFactors": ["Radna przywołuje prawdziwe fakty (społeczna funkcja własności, Konstytucja) — co utrudnia rozpoznanie słomianej kukły", "Stanowisko oponentów jest przerysowane: z 'ten podatek jest nadmierny' robi 'własność jest absolutna'", "Subtelna słomiana kukła: pozornie logiczny argument, ale oparty na zniekształconej wersji stanowiska przeciwników"], "inoculationGain": 10, "kpiCorrect": {"merit": 12, "popularity": 8, "inoculation": 10}, "kpiIncorrect": {"merit": 4, "popularity": 12, "inoculation": 4}}]}, {"id": "causation", "name": "Błędy przyczynowe", "description": "Wyciąganie błędnych wniosków przyczynowych o skutkach polityki społecznej. Korelacja nie oznacza przyczynowości, a łańcuchy przyczynowe wymagają dowodów na każdym etapie.", "badgeName": "Analityk przyczyn", "color": "#22c55e", "fallacies": ["Post hoc ergo propter hoc (po tym, więc wskutek tego)", "Argument równi pochyłej (slippery slope)", "Dowód anegdotyczny"], "scenarios": [{"id": "caus_det_1", "mode": "detective", "domain": "zdrowotna", "topic": "Wpływ programu 500+ na zdrowie publiczne", "context": "Popularny bloger polityczny publikuje post na temat programu 500+, który zdobywa tysiące udostępnień.", "argument": "Od czasu wprowadzenia programu 500+ liczba przypadków otyłości u dzieci wzrosła o 12%. Obserwujemy zbieżność czasową pomiędzy uruchomieniem programu a wzrostem otyłości. Po wprowadzeniu programu zaczęliśmy notować szczególnie dynamiczny wzrost wagi u najmłodszych. To sugeruje, że program 500+ może mieć związek z epidemią otyłości wśród polskich dzieci!", "fallacy": "Post hoc ergo propter hoc", "fallacyExplanation": "Bloger zakłada, że skoro otyłość u dzieci wzrosła po wprowadzeniu 500+, to program jest jej przyczyną. To klasyczny błąd post hoc ergo propter hoc — następstwo czasowe nie dowodzi związku przyczynowego. Trend wzrostu otyłości dziecięcej występuje globalnie i w Polsce rozpoczął się na długo przed 500+. Korelacja mogłaby mieć wiele przyczyn: zmiany stylu życia, pandemia COVID-19, większy dostęp do przetworzonej żywności.", "contextSensitivity": {"level": "medium", "validWhen": "Badanie wpływu transferów pieniężnych na nawyki żywieniowe jest uzasadnione — ale wymaga kontrolowanego badania naukowego z grupą kontrolną, nie prostej korelacji czasowej. Pytanie o to, na co rodzice wydają 500+, jest zasadne, ale odpowiedź wymaga danych, nie domysłów.", "invalidBecause": "Bloger wnioskuje przyczynowość z samej korelacji czasowej, ignorując inne potencjalne przyczyny wzrostu otyłości i nie powołując się na żadne badanie, które izolowałoby wpływ programu 500+ od innych czynników."}, "responses": {"substantive": {"text": "Argument zakłada przyczynowość na podstawie jedynie korelacji czasowej. Rzeczywisty wzrost otyłości może mieć wiele przyczyn: zmiana nawyków żywieniowych, wzrost spożycia fast foodów, mniej aktywności. Czy istnieją badania pokazujące bezpośredni związek między programem a otyłością? To wymaga rzetelnego dowodu.", "merit": 16, "popularity": 4, "explanation": "Odpowiedź precyzyjnie identyfikuje błąd logiczny (korelacja ≠ przyczynowość), podaje kontekst (globalny trend) i wskazuje, jakie dowody byłyby potrzebne. Merytoryczna, ale nie atakuje autora.", "reactions": ["Korelacja nie oznacza przyczynowości — nudne, ale prawdziwe.", "A jak wytłumaczysz te 12%?", "Typowy obrońca 500+, zawsze znajdzie wymówkę."], "inoculation": 10}, "eristic": {"text": "To błędne wnioskowanie z korelacji! Jedynie fakt, że dwa zjawiska zaszły w tym samym czasie, nie oznacza, że jedno spowodowało drugie. Otyłość wzrasta z wielu powodów. Gdzie są rzeczywiste badania pokazujące powiązanie z programem 500+?", "merit": 5, "popularity": 15, "explanation": "Sarkazm trafnie wyśmiewa błąd logiczny, ale redukcja ad absurdum sama w sobie nie jest argumentem. Humorystyczna, ale nie wnosi alternatywnego wyjaśnienia.", "reactions": ["Haha, deszcz powoduje poniedziałki!", "Śmieszne, ale nie odpowiedziałeś na pytanie.", "Dobre! Tak działa ta pseudo-logika."], "inoculation": 10}, "fallacious": {"text": "Wzrost otyłości jest rzeczywiście problemem godnym uwagi, ale jego przyczyny są złożone. Zmienił się styl życia, dostęp do jedzenia, aktywność fizyczna. Zamiast szukać jednego winowajcy, powinniśmy zbadać wszystkie czynniki i ich rzeczywisty wpływ.", "merit": 2, "popularity": 21, "explanation": "Odpowiedź opiera się na dowodzie anegdotycznym — kilka znanych przypadków nie może być podstawą do oceny programu obejmującego miliony rodzin. Obserwacja 5 rodzin nie zastępuje badań na reprezentatywnej próbie.", "reactions": ["U mnie na osiedlu tak samo!", "5 rodzin z 3 milionów to nie jest dowód...", "Ale widzę to na własne oczy, nie potrzebuję statystyk!"], "inoculation": 7}}}, {"id": "caus_det_2", "mode": "detective", "domain": "mieszkaniowa", "topic": "Kontrola czynszów", "context": "Debata w radzie miasta na temat wprowadzenia regulacji ograniczającej wzrost czynszów w centrum. Radny opozycji zabiera głos.", "argument": "Jeśli dzisiaj ograniczymy czynsze, jutro właściciele przestaną remontować budynki, za rok zaczną je sprzedawać, za dwa lata nikt nie będzie budował nowych mieszkań, a za pięć lat będziemy mieli slumsy jak w Nowym Jorku lat 70.!", "fallacy": "Argument równi pochyłej", "fallacyExplanation": "Mówca przedstawia ciąg domniemanych konsekwencji jako nieuchronny, nie dostarczając dowodów na to, że każdy kolejny krok musi nastąpić. Kontrola czynszów to złożony instrument, który może być zaprojektowany na wiele sposobów. Porównanie z Nowym Jorkiem lat 70. pomija dziesiątki innych czynników tamtejszego kryzysu.", "contextSensitivity": {"level": "medium", "validWhen": "Argument o negatywnych skutkach kontroli czynszów może być uzasadniony, gdy oparty jest na konkretnych badaniach ekonomicznych i doświadczeniach miast z podobnymi regulacjami. Analiza łańcucha przyczynowego wymaga jednak dowodów na każdy krok.", "invalidBecause": "Mówca przeskakuje przez wiele etapów bez uzasadnienia, że każdy z nich nieuchronnie wynika z poprzedniego. Porównanie z Nowym Jorkiem lat 70. jest nieadekwatne — tamta sytuacja miała wiele przyczyn, nie tylko kontrolę czynszów."}, "responses": {"substantive": {"text": "Radny przedstawia łańcuch domniemanych konsekwencji bez uzasadnienia każdego ogniwa. Czy regulacja czynszów naprawdę prowadzi do zaprzestania remontów? Doświadczenia Wiednia, Berlina czy Barcelony dają zróżnicowane wyniki. Każdy krok tego scenariusza wymaga osobnego uzasadnienia danymi.", "merit": 15, "popularity": 6, "explanation": "Odpowiedź nie ignoruje obaw, ale przenosi dyskusję z hipotetycznych łańcuchów katastroficznych na dane empiryczne z miast o regulacji czynszów. Proponuje metodyczne podejście do analizy ryzyka.", "reactions": ["Nudne, ale w sumie ma rację — sprawdźmy dane.", "Wiedeń to nie Polska!", "Wreszcie ktoś mówi o faktach, a nie o strachach."], "inoculation": 9}, "eristic": {"text": "Za chwilę powie pan, że ograniczenie czynszów spowoduje trzęsienie ziemi! Każdy kolejny krok tego argumentu jest bardziej absurdalny od poprzedniego. Od regulacji czynszów do slumsów z lat 70. — ile kroków potrzeba, żeby dojść do końca świata?", "merit": 4, "popularity": 16, "explanation": "Sarkazm celnie wyśmiewa przesadę argumentu równi pochyłej, ale nie odnosi się do faktycznych ryzyk regulacji czynszów. Kontratak retoryczny zamiast merytorycznej analizy.", "reactions": ["DOKŁADNIE! Niech sam spróbuje!", "Ogień odpowiedziano ogniem!", "To było ostre, ale w punkt."], "inoculation": 10}, "fallacious": {"text": "80% mieszkańców centrum chce regulacji czynszów — to głos ludu! Właściciele i tak zarabiają krocie, a ludzie nie mają gdzie mieszkać. Kto jest przeciw regulacji, broni interesów kamieniczników, nie zwykłych ludzi.", "merit": 3, "popularity": 20, "explanation": "Argument ad populum — popularność regulacji nie dowodzi jej skuteczności. Dodatkowo atak ad personam (obrońcy kamieniczników). Ignoruje złożoność ekonomiczną problemu.", "reactions": ["Właśnie! Ludzie chcą regulacji!", "Głos ludu, głos Boga!", "Ale popularność nie oznacza, że to zadziała..."], "inoculation": 7}}}, {"id": "caus_spin_1", "mode": "spin-doctor", "domain": "ubezpieczen_spolecznych", "topic": "Wprowadzenie dochodu gwarantowanego", "briefing": "Jesteś doradcą medialnym partii opozycyjnej, która chce zdyskredytować pilotażowy program dochodu gwarantowanego (1200 zł/miesiąc dla 5000 osób w trzech miastach). Musisz stworzyć argument sugerujący katastrofalne skutki, wykorzystując techniki fałszywego przyczynowania.", "targetFallacyCategory": "causation", "options": [{"id": "slippery_slope", "technique": "Argument równi pochyłej", "text": "Dzisiaj dajemy 1200 zł za nic 5000 osób. Jutro będą chciały 2000, potem 3000. Za rok nikt nie będzie pracował, firmy zaczną upadać, państwo zbankrutuje i skończymy jak Wenezuela. To początek końca polskiej gospodarki!", "meritDamage": 2, "popularityGain": 16, "inoculationGain": 12, "expertDebunking": "Klasyczny argument równi pochyłej: z pilotażowego programu dla 5000 osób wyciągany jest wniosek o bankructwie państwa. Każdy krok w łańcuchu (eskalacja kwot → masowa rezygnacja z pracy → upadek firm → bankructwo) wymaga osobnego uzasadnienia. Badania nad dochodem gwarantowanym (Finlandia, Kenia, Stockton) nie potwierdzają masowej rezygnacji z pracy.", "reactions": ["Wenezuela! Wiedziałem, do tego prowadzi socjalizm!", "Ale to jest pilotaż dla 5000 osób, nie rewolucja...", "Straszenie działa, bo ludzie nie czytają szczegółów."]}, {"id": "post_hoc", "technique": "Post hoc ergo propter hoc", "text": "W Finlandii w 2017 roku uruchomili podobny program — i co? Bezrobocie nie spadło! Po dwóch latach program zamknięto. To dowód, że dochód gwarantowany nie działa i jest wyrzucaniem pieniędzy w błoto!", "meritDamage": 5, "popularityGain": 14, "inoculationGain": 11, "expertDebunking": "Uproszczenie wyników eksperymentu fińskiego. Program nie został 'zamknięty z powodu porażki' — miał z góry określony czas trwania. Wyniki były mieszane: brak wpływu na zatrudnienie, ale poprawa zdrowia psychicznego i poczucia bezpieczeństwa. Fałszywa przyczynowość: brak spadku bezrobocia ≠ dowód nieskuteczności, bo program nie miał na celu zwiększenia zatrudnienia.", "reactions": ["Finlandia spróbowała i nie wyszło, po co powtarzać błędy?", "Ale ten program miał inne cele niż redukcja bezrobocia...", "Brzmi przekonująco, ale coś tu nie gra."]}, {"id": "weak", "technique": "Rozumowanie słabą analogią", "text": "Dochód gwarantowany to jak zasiłek dla bezrobotnych wyjąwszy dla każdego. Zasiłki dla bezrobotnych pokazują, że dochód gwarantowany nie zachęca do pracy. Wiemy, jak się to skończy — ludzie będą pracować mniej. Historia ma nas pouczyć.", "meritDamage": 11, "popularityGain": 11, "inoculationGain": 8, "expertDebunking": "Porównanie między zasiłkami dla bezrobotnych a dochodem gwarantowanym jest słabe. To zupełnie różne systemy — dochód gwarantowany jest dla wszystkich niezależnie od zatrudnienia, podczas gdy zasiłki są dla konkretnej grupy. Badania z testów dochodów gwarantowanych w różnych krajach pokazują inne rezultaty niż zasiłki dla bezrobotnych.", "reactions": ["To za mało, żeby kogokolwiek przekonać.", "OK, ale czemu? Argumenty?", "Moralizowanie bez danych."]}]}, {"id": "caus_ctx_1", "mode": "context-judge", "domain": "edukacyjna", "topic": "Bon edukacyjny dla rodziców", "context": "Dyskusja w komisji edukacji o systemie bonów edukacyjnych, które rodzice mogliby wydać w wybranej szkole. Jeden z ekspertów prezentuje następujący argument.", "argument": "System bonów edukacyjnych w Chile, wprowadzony w 1981 roku, doprowadził do gwałtownego wzrostu segregacji społecznej w edukacji. W ciągu 20 lat różnica w wynikach nauczania między szkołami w dzielnicach bogatych i biednych wzrosła o 45%. Wprowadzenie podobnego systemu w Polsce grozi powtórzeniem tego scenariusza.", "isActuallySophism": true, "fallacyIfSophism": "Błędna analogia", "explanation": "To JEST sofizmat (błędna analogia, z elementem argumentu równi pochyłej). Porównanie z Chile pomija kluczowe różnice kontekstowe: Chile w 1981 r. to dyktatura Pinocheta z radykalnie innym systemem społecznym, politycznym i instytucjonalnym; Polska 2024 to demokracja z silną tradycją szkolnictwa publicznego i innymi mechanizmami wyrównawczymi. Kluczowa różnica z uzasadnionymi porównaniami międzynarodowymi (np. UK/Francja w kwestii integracji kulturowej): Chile lat 80. to tak odległy kontekst, że nawet hedgowana forma ('grozi powtórzeniem') jest myląca — sugeruje porównywalność, która nie istnieje. Dane o Chile mogą być relevantne jako przestroga, ale wymagają omówienia różnic i podobieństw, czego tu brakuje.", "ifCalledSophism": "Dobrze! Choć dane z Chile są prawdziwe i wartościowe, bezpośrednie przenoszenie wniosków z chilijskiego kontekstu lat 80. na współczesną Polskę to błędna analogia. Różnice systemowe, polityczne i społeczne są zbyt duże, żeby automatycznie zakładać identyczne skutki.", "ifCalledLegitimate": "Warto spojrzeć krytyczniej. Dane z Chile są prawdziwe, ale kontekst jest diametralnie inny: Chile lat 80. to dyktatura z radykalnie odmiennym systemem społecznym. Bezpośrednie wnioskowanie 'w Chile nie wyszło, więc w Polsce też nie wyjdzie' wymaga wykazania, że konteksty są porównywalne — a tu tego brakuje. To błędna analogia.", "contextFactors": ["Dane z Chile są prawdziwe, ale kontekst historyczny diametralnie różny (dyktatura vs demokracja)", "Bezpośrednie przenoszenie wniosków wymaga wykazania porównywalności systemów edukacyjnych", "Argument mógłby być uzasadniony, gdyby ekspert omówił różnice i podobieństwa między kontekstami"], "inoculationGain": 10, "kpiCorrect": {"merit": 12, "popularity": 8, "inoculation": 10}, "kpiIncorrect": {"merit": 4, "popularity": 12, "inoculation": 4}}]}, {"id": "tradition", "name": "Odwołania do tradycji i status quo", "description": "Wykorzystywanie konserwatyzmu poznawczego lub fascynacji nowością jako argumentów w debatach o polityce społecznej. Tradycja ani nowość same w sobie nie są argumentami za ani przeciw.", "badgeName": "Krytyk tradycji", "color": "#3b82f6", "fallacies": ["Argumentum ad antiquitatem (odwołanie do tradycji)", "Argumentum ad novitatem (odwołanie do nowości)", "Błędna analogia (fałszywa analogia)"], "scenarios": [{"id": "trad_det_1", "mode": "detective", "domain": "edukacyjna", "topic": "Nauczanie zdalne w szkołach", "context": "Debata na forum rodziców o propozycji wprowadzenia jednego dnia nauki zdalnej tygodniowo w szkołach ponadpodstawowych. Rodzic pisze popularny post.", "argument": "Przez setki lat dzieci chodziły do szkoły i się uczyły. Nasi dziadkowie nie potrzebowali komputerów, żeby zdobyć wykształcenie. Tradycyjna edukacja stacjonarna sprawdza się od pokoleń — nie naprawiajmy tego, co nie jest zepsute. Nowości w edukacji zawsze prowadzą do obniżenia poziomu.", "fallacy": "Argumentum ad antiquitatem (odwołanie do tradycji)", "fallacyExplanation": "Argument zakłada, że skoro tradycyjna edukacja istnieje od dawna, musi być lepsza od nowszych rozwiązań. Fakt, że coś funkcjonowało przez długi czas, nie jest sam w sobie dowodem na optymalność. Edukacja ewoluowała wielokrotnie (wprowadzenie obowiązku szkolnego, nowe przedmioty, laboratoria) i każda zmiana spotykała się z oporem.", "contextSensitivity": {"level": "medium", "validWhen": "Argumenty za wartością edukacji stacjonarnej mogą być uzasadnione, gdy opierają się na badaniach pedagogicznych o efektywności różnych form nauczania, socjalizacji uczniów, czy nierównościach w dostępie do technologii.", "invalidBecause": "Ten argument opiera się wyłącznie na tradycji ('zawsze tak było') bez odniesienia do danych o skuteczności. Generalizacja 'nowości zawsze prowadzą do obniżenia poziomu' jest fałszywa — wiele innowacji edukacyjnych poprawiło jakość nauczania."}, "responses": {"substantive": {"text": "Tradycja edukacji stacjonarnej jest cenna, ale sam fakt istnienia od pokoleń nie dowodzi optymalności. Badania pedagogiczne dają zróżnicowane wyniki: edukacja zdalna może być skuteczna w konkretnych warunkach. Pytanie nie brzmi 'nowe czy stare', lecz 'co działa najlepiej dla tych uczniów i w jakim zakresie'.", "merit": 15, "popularity": 5, "explanation": "Odpowiedź uznaje wartość tradycyjnej edukacji, ale przenosi dyskusję na grunt badań empirycznych zamiast argumentu z tradycji. Nie odrzuca edukacji stacjonarnej — prosi o dane.", "reactions": ["Badania, badania... a zdrowy rozsądek?", "Dobre podejście — dane zamiast opinii.", "Ale nasze doświadczenie też się liczy!"], "inoculation": 10}, "eristic": {"text": "Nasi dziadkowie też nie mieli kalkulatorów, a jakoś nikt nie proponuje powrotu do liczydła. 'Zawsze tak było' to nie argument — to wymówka. Może sprawdźmy badania zamiast powoływać się na przeszłość?", "merit": 5, "popularity": 15, "explanation": "Trafny kontrprzykład, który ujawnia słabość argumentu z tradycji. Ale nie odnosi się do meritum dyskusji o nauczaniu zdalnym — tylko podważa logikę oponenta.", "reactions": ["Prawo jazdy i edukacja to co innego!", "Ha, dobre! Tradycja to nie argument!", "Sprowadzanie do absurdu, ale skuteczne."], "inoculation": 10}, "fallacious": {"text": "Google, Apple, Microsoft — wszyscy stawiają na e-learning. Każde nowoczesne państwo przechodzi na technologie cyfrowe w edukacji. Kto tego nie rozumie, chce cofnąć Polskę do średniowiecza.", "merit": 3, "popularity": 20, "explanation": "Odpowiedź zawiera argumentum ad novitatem (nowe = lepsze), odwołanie do autorytetu Big Tech jako wyroczni edukacyjnej i argument równi pochyłej (brak e-learningu = średniowiecze). Zastępuje jeden błąd logiczny innym.", "reactions": ["Big Tech chce sprzedać swoje produkty, nie edukować!", "Postęp i nowoczesność to klucz!", "Z jednej skrajności w drugą..."], "inoculation": 7}}}, {"id": "trad_det_2", "mode": "detective", "domain": "ubezpieczen_spolecznych", "topic": "Prywatne fundusze emerytalne", "context": "Dyskusja w mediach o nowatorskim programie emerytalnym opartym na technologii blockchain i indywidualnych kontach inwestycyjnych. Przedstawiciel firmy fintech prezentuje rozwiązanie.", "argument": "Nasz system oparty na blockchainie i AI to rewolucja w emeryturach! Tradycyjny ZUS to relikt przeszłości — był projektowany w XX wieku dla XX-wiecznego świata. Technologia blockchain jest nowa, więc z definicji lepsza od starych rozwiązań. Każda nowoczesna firma i państwo, które chce być konkurencyjne, przechodzi na technologie cyfrowe.", "fallacy": "Argumentum ad novitatem (odwołanie do nowości)", "fallacyExplanation": "Argument zakłada, że nowość technologii (blockchain, AI) jest sama w sobie dowodem na wyższość rozwiązania. 'Nowe, więc z definicji lepsze' to klasyczne argumentum ad novitatem. ZUS może wymagać reform, ale wiek systemu nie jest argumentem — ważna jest jego skuteczność, bezpieczeństwo i sprawiedliwość. Blockchain w emeryturach to koncepcja, nie zweryfikowane rozwiązanie.", "contextSensitivity": {"level": "medium", "validWhen": "Propozycje modernizacji systemu emerytalnego z wykorzystaniem nowych technologii mogą być uzasadnione, gdy opierają się na analizie bezpieczeństwa, kosztów, dostępności i porównaniu z istniejącymi rozwiązaniami.", "invalidBecause": "Argument opiera się wyłącznie na fakcie nowości technologii ('nowe = lepsze') bez analizy ryzyka, kosztów, bezpieczeństwa oszczędności emerytalnych czy dostępności dla osób starszych i wykluczonych cyfrowo."}, "responses": {"substantive": {"text": "Nowość technologii blockchain i AI nie jest sama w sobie dowodem na wyższość rozwiązania. Kluczowe pytania dotyczą bezpieczeństwa: jak chronione są oszczędności emerytalne w systemie blockchain? Jaka jest dostępność dla osób starszych? Jakie są koszty wdrożenia? ZUS ma problemy, ale zastąpienie go wymaga dowodów, nie entuzjazmu.", "merit": 16, "popularity": 4, "explanation": "Odpowiedź nie odrzuca innowacji, ale wymaga merytorycznego uzasadnienia zamiast polegania na samej nowości jako argumencie. Stawia kluczowe pytania o bezpieczeństwo i dostępność.", "reactions": ["Ale nudno — zawsze jakieś ale...", "Ważne pytania. Bezpieczeństwo emerytury to nie startup.", "Konserwatysta nie rozumie technologii!"], "inoculation": 10}, "eristic": {"text": "Blockchain w emeryturach? A babcia Krysia z Pcimia będzie zarządzać portfelem kryptowalut? Rewolucja! Zaraz pewnie zaproponujecie, żeby emerytury wypłacać w NFT. Może najpierw nauczmy seniorów korzystać z internetu?", "merit": 5, "popularity": 16, "explanation": "Sarkazm trafnie punktuje oderwanie propozycji od realiów (dostępność dla osób starszych), ale nie odnosi się merytorycznie do potencjalnych zalet technologii w systemie emerytalnym.", "reactions": ["Haha, babcia z blockchaina!", "Ale to nie jest fair porównanie...", "Kpiny zamiast merytorycznej dyskusji."], "inoculation": 9}, "fallacious": {"text": "ZUS działa od dziesięcioleci i zawsze wypłacał emerytury. To sprawdzony, bezpieczny system — nie eksperymentujmy na ludziach z ich oszczędnościami życia. Tradycja publicznego systemu emerytalnego jest fundamentem bezpieczeństwa socjalnego.", "merit": 2, "popularity": 21, "explanation": "Odpowiedź na argumentum ad novitatem to argumentum ad antiquitatem — fakt, że ZUS 'zawsze działał', nie jest argumentem za jego optymalnością. Zamiana jednego sofizmatu na inny.", "reactions": ["Mądrość przodków! ZUS jest sprawdzony!", "ZUS też ma problemy — pytanie jakie rozwiązanie jest lepsze.", "Z deszczu pod rynnę — dwa błędy logiczne."], "inoculation": 7}}}, {"id": "trad_spin_1", "mode": "spin-doctor", "domain": "mieszkaniowa", "topic": "Spółdzielnie mieszkaniowe nowego typu", "briefing": "Jesteś doradcą medialnym dewelopera, który chce zablokować propozycję miejskich spółdzielni mieszkaniowych nowego typu (cohousingów). Te spółdzielnie miałyby otrzymać preferencyjne działki i tanie kredyty. Twoim zadaniem jest zdyskredytować tę propozycję, wykorzystując odwołania do tradycji lub błędne analogie.", "targetFallacyCategory": "tradition", "options": [{"id": "false_analogy", "technique": "Błędna analogia", "text": "Spółdzielnie mieszkaniowe? Już to przerabialiśmy w PRL-u! Wielkie bloki z wielkiej płyty, tłok, szarość i biurokracja — to są polskie doświadczenia ze spółdzielczością. Kto chce wrócić do patologii spółdzielni z tamtych czasów? Teraz nam to sprzedają pod nową nazwą: 'cohousing'!", "meritDamage": 2, "popularityGain": 16, "inoculationGain": 12, "expertDebunking": "Błędna analogia: współczesne spółdzielnie mieszkaniowe (cohousingi) mają niewiele wspólnego ze spółdzielniami PRL-u. Różnią się modelem zarządzania (demokratyczny vs centralny), skalą (kilkadziesiąt rodzin vs tysiące), filozofią (wspólnota vs masowa produkcja). To jak porównywanie współczesnej kawiarni z PRL-owskim barem mlecznym — słowo 'bar' to za mało.", "reactions": ["PRL wiecznie żywy! Komunizm pod nową nazwą!", "Ale cohousingi to coś zupełnie innego niż PRL-owskie blokowiska...", "Sprytne — każdy boi się PRL-u, więc zadziała."]}, {"id": "tradition", "technique": "Argumentum ad antiquitatem (odwołanie do tradycji)", "text": "W Polsce od 30 lat budujemy rynek mieszkaniowy oparty na własności i deweloperach. Ten model sprawdził się — mamy setki tysięcy nowych mieszkań rocznie. Po co wracać do eksperymentów społecznych, które w polskiej tradycji się nie sprawdziły? Trzymajmy się sprawdzonego modelu.", "meritDamage": 5, "popularityGain": 14, "inoculationGain": 11, "expertDebunking": "Argumentum ad antiquitatem: fakt, że model deweloperski istnieje od 30 lat, nie dowodzi jego optymalności. W tym czasie Polska zyskała jeden z najniższych współczynników mieszkań na 1000 mieszkańców w UE. 'Sprawdzony model' nie rozwiązał kryzysu mieszkaniowego — co sugeruje, że może potrzebować uzupełnienia.", "reactions": ["Nie naprawiajmy tego, co działa!", "A ten 'sprawdzony model' dał nam najdroższe mieszkania w historii?", "Tradycja i stabilność — ważne wartości."]}, {"id": "weak", "technique": "Fałszywa przyczynowość", "text": "Spółdzielnie mieszkaniowe funkcjonowały doskonale w przeszłości. Kiedy zaczęliśmy bardziej polegać na deweloperach, pojawił się chaos na rynku mieszkaniowym. Powrót do spółdzielni rozwiąże nasze problemy mieszkaniowe.", "meritDamage": 12, "popularityGain": 10, "inoculationGain": 8, "expertDebunking": "Tylko dlatego, że spółdzielnie były popularne wcześniej i rynek zmienił się później, nie oznacza, że zmiana w spółdzielniach spowodowała problemy. Wiele innych czynników wpłynęło na rynek mieszkaniowy — imigracja, wzrost wynagrodzeń, dostępność kredytów. To uproszczona przyczynowość ignorująca złożoność problemu.", "reactions": ["Argumenty jakieś?", "Bo tak mówię? To za mało.", "Typowy komentarz bez wartości."]}]}, {"id": "trad_ctx_1", "mode": "context-judge", "domain": "migracyjna", "topic": "Polityka integracji kulturowej", "context": "Debata o kształcie programu integracji kulturowej dla imigrantów w Polsce. Jeden z uczestników prezentuje następujący argument.", "argument": "Model wielokulturowości stosowany w Wielkiej Brytanii i Francji doprowadził tam do powstawania zamkniętych enklaw kulturowych i rosnących napięć społecznych. Polska powinna uczyć się na błędach innych krajów i od początku stawiać na aktywną integrację zamiast biernego wielokulturowego podejścia.", "isActuallySophism": false, "fallacyIfSophism": null, "explanation": "To NIE jest sofizmat, choć na pierwszy rzut oka może przypominać błędną analogię. Kluczowa różnica: mówca (1) nie twierdzi, że Polska jest identyczna z UK czy Francją, (2) nie mówi, że identyczne skutki MUSZĄ nastąpić, (3) formułuje uzasadniony postulat: 'uczyć się na błędach innych' i 'stawiać na aktywną integrację'. Używa doświadczeń innych krajów jako przestrogi, nie jako dowodu, że identyczny scenariusz jest nieunikniony.", "ifCalledSophism": "Uważnie! Choć argument odwołuje się do doświadczeń innych krajów, nie jest to błędna analogia, bo mówca: (1) nie twierdzi, że Polska = UK/Francja, (2) nie mówi, że identyczne skutki MUSZĄ nastąpić, (3) wyciąga konstruktywny wniosek ('uczyć się na błędach'). Porównanie międzynarodowe jest uzasadnione, gdy służy jako przestroga, nie jako dowód nieuchronności.", "ifCalledLegitimate": "Trafna ocena! Kluczowe jest to, że mówca używa doświadczeń zagranicznych jako lekcji, nie jako dowodu determinizmu. Sformułowania 'uczyć się na błędach' i 'od początku stawiać na' wskazują na refleksję, nie na automatyczne przenoszenie wniosków.", "contextFactors": ["Mówca NIE twierdzi, że Polska jest identyczna z UK/Francją — wskazuje na lekcję do wyciągnięcia", "Postulat jest konstruktywny: 'uczyć się na błędach' i 'stawiać na aktywną integrację'", "Porównanie międzynarodowe jest uzasadnione, gdy służy jako przestroga, a nie dowód determinizmu"], "inoculationGain": 10, "kpiCorrect": {"merit": 12, "popularity": 8, "inoculation": 10}, "kpiIncorrect": {"merit": 4, "popularity": 12, "inoculation": 4}}]}]};
+
+        const CHAPTER_NARRATIVES = {
+            emotions: {
+                chapterTitle: "Ekonomia współczucia",
+                openingBriefing: "Pierwsza kategoria — jak emocje zastępują argumenty. To najmniej odległa taktyka, bo każdy rozumie emocje. Ale właśnie dlatego — bo każdy je rozumie — są tak potężne.\n\nPrzyjrzyj się czterem scenariuszom z różnych dziedzin polityki społecznej. W każdym mówca odwołuje się do litości, strachu lub \"tego, co wszyscy myślą\". Sprawdzisz zarówno, czy rozpoznajesz te odwołania, jak i jak się im przeciwstawiać.",
+                closingMessages: {
+                    bronze: "Zarabiasz odznakę. To nie koniec drogi, ale dobry początek. Wróć do tej kategorii — z każdym razem będziesz lepszy.",
+                    silver: "Odznaka srebrna. Jesteś już biegły w rozpoznawaniu manipulacji emocjonalnej.",
+                    gold: "Złota odznaka. Rozumiesz subtelności emocji w debacie — i potrafisz się przed nimi bronić."
+                },
+                transitionMessage: "Będzie trudniej. Sofizmaty będą bardziej wyrafinowane. A pokusa ich użycia — silniejsza."
+            },
+            attacks: {
+                chapterTitle: "Zabić posłańca",
+                openingBriefing: "Druga kategoria — ad personam. Zamiast odnosić się do argumentów, atakujesz osobę. Zamiast pytać \"czy to prawda?\", pytasz \"kto to mówi?\"\n\nTo myślenie: jeśli wiem coś negatywnego o mówiącym, jego argument jest bezwartościowy. Czasami ma to sens — konflikt interesów to ważna informacja. Ale zawsze?\n\nCztery scenariusze pokazują różne wersje: bezpośredni atak, odwrotny atak (tu quoque), fałszywy autorytet.",
+                closingMessages: {
+                    bronze: "Podstawy ad personam opanowane. Ale brakuje ci pewności w rozróżnianiu uzasadnionej krytyki od ataku.",
+                    silver: "Odznaka srebrna. Potrafisz oddzielić posłańca od wiadomości.",
+                    gold: "Złota odznaka. Ekspert od ataków personalnych — i ich obrony."
+                },
+                transitionMessage: "Im lepiej rozumiesz, jak atakować osobę zamiast argumentu, tym bardziej kusząca staje się ta droga. Pamiętaj: wiedza bez etyki to broń."
+            },
+            distortion: {
+                chapterTitle: "Przesuwanie słupków",
+                openingBriefing: "Trzecia kategoria — logiczne karykaturyzacje. Przesuwanie słupków. Tworzenie fałszywych alternatyw.\n\nKiedy ktoś atakuje słomianą kukłę — zmienioną wersję Twojego stanowiska — lub mówi \"albo to, albo katastrofa\", zniekształca rzeczywistość. To wymaga kreatywności. Musisz zrozumieć logikę oponenta dobrze — żeby móc ją zniekształcić.",
+                closingMessages: {
+                    bronze: "Podstawy zniekształceń poznane. Ale rozpoznawanie subtelnych słomianych kukieł wymaga jeszcze praktyki.",
+                    silver: "Odznaka srebrna. Potrafisz rozpoznawać karykaturyzacje i fałszywe alternatywy.",
+                    gold: "Złota odznaka. Mistrz demaskowania zniekształceń argumentacyjnych."
+                },
+                transitionMessage: "Teraz wiesz, jak myśleć jak propagandysta. To umiejętność, która dzisiaj decyduje o politycznych wyborach. Ale czy chcesz być tym propagandystą, czy tym, kto się przed propagandą broni?"
+            },
+            causation: {
+                chapterTitle: "Korelacja to nie dowód",
+                openingBriefing: "Czwarta kategoria — błędy przyczynowe. \"Po A przyszło B, zatem A spowodowało B.\" Myślenie bardzo intuicyjne, ale bardzo błędne.\n\nPost hoc ergo propter hoc. Równia pochyła. Dowód anegdotyczny. Kiedy polityk mówi \"500+ wydajemy, a teraz otyłość rośnie — zatem program powoduje otyłość\" — to jest właśnie ten błąd.\n\nTen rodzaj sofizmu jest szczególnie niebezpieczny, bo opiera się na obserwacjach rzeczywistych.",
+                closingMessages: {
+                    bronze: "Błędy przyczynowe bywają podstępne. Dobrze, że zaczynasz je rozpoznawać.",
+                    silver: "Odznaka srebrna. Rozróżniasz korelację od przyczynowości — to rzadka umiejętność.",
+                    gold: "Złota odznaka. Analityk przyczyn — nie dasz się zwieść fałszywej logice."
+                },
+                transitionMessage: "Błędy przyczynowe są zakamuflowane obserwacjami rzeczywistości. Naukowe myślenie to odrzucenie pewności na rzecz probabilistyki."
+            },
+            tradition: {
+                chapterTitle: "Tak było, tak będzie?",
+                openingBriefing: "Ostatnia kategoria — tradycja i status quo. \"Zawsze tak było, zatem powinno być dalej\" albo \"To jest nowe, zatem musi być lepsze.\"\n\nTo kategoria szczególna, bo zawiera klasyczną opozycję: konserwatyzm kontra progresja. Ale obydwa kierunki mogą być sofizmatami. Ad antiquitatem — odwołanie do tradycji. Ad novitatem — odwołanie do nowości. I fałszywe analogie.\n\nScenariusze będą najbardziej subtelne.",
+                closingMessages: {
+                    bronze: "Podstawy tradycji i nowości opanowane. Ale rozróżnianie mądrości od inercji wymaga wprawy.",
+                    silver: "Odznaka srebrna. Potrafisz oceniać, kiedy tradycja jest mądrością, a kiedy przeszkodą.",
+                    gold: "Złota odznaka. Krytyk tradycji i nowości — widzisz niuanse, których inni nie dostrzegają."
+                },
+                transitionMessage: null
+            }
+        };
+
+        // Player profiles
+        // Profile — progi skalibrowane do rzeczywistych rozkładów wyników gry
+        // Merit: 26–86 (średnia 54), Popularity: 54–100 (średnia 84), Inoculation: 56–83 (średnia 70)
+        // Kolejność ma znaczenie: pierwszy spełniony warunek wygrywa
+        const PLAYER_PROFILES = [
+            {
+                id: 'inoculation_master',
+                name: 'Mistrz Inokulacji',
+                icon: '🛡️',
+                condition: (m, p, i) => m >= 75 && i >= 75,
+                description: 'Łączysz głębokie zrozumienie mechaniki manipulacji z merytoryczną argumentacją. Wiesz, jak działa sofizmat od wewnątrz, ale nie ulegasz pokusie używania go bez refleksji. To rzadka umiejętność — rozumienie bez korumpowania się tą wiedzą.',
+                debateImplication: 'Na debatę wchodzisz z immunitetem. Widzisz, kiedy oponent próbuje cię manipulować, i potrafisz bronić swojej pozycji bez kontrmanipulacji.'
+            },
+            {
+                id: 'academic_purist',
+                name: 'Akademicki Purysta',
+                icon: '📚',
+                condition: (m, p, i) => m >= 60 && p < 80,
+                description: 'Wolisz merytoryczną dyskusję nawet kosztem popularności. Twoje argumenty trafiają głównie do ekspertów. Czasem czujesz frustrację, że ludzie cię nie słuchają, ale wiesz, że masz rację.',
+                debateImplication: 'Na debacie będziesz precyzyjny, rzeczowy, niezłomny. Ale musisz nauczyć się, że precyzja bez komunikacji to echo w próżni.'
+            },
+            {
+                id: 'ideal_communicator',
+                name: 'Idealny Komunikator',
+                icon: '✨',
+                condition: (m, p, i) => m >= 60 && p >= 85,
+                description: 'Rzadka umiejętność: łączysz merytoryczność z popularnością. Potrafisz wyjaśnić złożone zagadnienia w sposób, który ludzie rozumieją i którym się zainteresują. Twoje argumenty są poprawne, a zarazem angażujące.',
+                debateImplication: 'Jesteś tym, kto może przekonać ludzi do dobrego pomysłu. To nie manipulacja — to sztuka komunikacji.'
+            },
+            {
+                id: 'meme_influencer',
+                name: 'Influencer Memów',
+                icon: '📱',
+                condition: (m, p, i) => m <= 42 && p >= 90,
+                description: 'Twoje wypowiedzi są popularne, angażujące, viralne. Ludzie cię obserwują. Ale często kosztem jakości argumentacji. Zdobywasz uwagę, ale nie zawsze prowadzisz konstruktywną debatę.',
+                debateImplication: 'Na debacie będziesz charyzmatyczny i zapamiętywalny. Ale brak fundamentu faktów oznacza, że twoje stanowisko może się zawalić pod presją ekspertów.'
+            },
+            {
+                id: 'spin_doctor',
+                name: 'Spin Doktor',
+                icon: '🎭',
+                condition: (m, p, i) => m >= 45 && m < 60 && i >= 70,
+                description: 'Rozumiesz mechanizmy manipulacji i potrafisz je wykorzystywać. Masz potencjał, żeby tę wiedzę przekuć w obronę przed sofizmatami — ale masz też pokusę, żeby ją wykorzystywać. Uważaj na siebie.',
+                debateImplication: 'Jesteś strategicznym graczem. Widzisz mechanizmy podłoża w polityce. Ta umiejętność może prowadzić do korupcji lub edukacji — zależy od wyborów.'
+            },
+            {
+                id: 'balanced_debater',
+                name: 'Zbalansowany Debatujący',
+                icon: '⚖️',
+                condition: (m, p, i) => m >= 45 && m < 60,
+                description: 'Starasz się zachować równowagę między merytorycznością a popularnością. Czasem stawiasz na jakość, czasem na zasięg. To pragmatyczne podejście — ale wymaga świadomości, kiedy robisz kompromis.',
+                debateImplication: 'Jesteś elastyczny i adaptacyjny. Musisz tylko pamiętać, że elastyczność może zmienić się w niespójność. Zdefiniuj swoje granice.'
+            },
+            {
+                id: 'novice_analyst',
+                name: 'Początkujący Analityk',
+                icon: '🌱',
+                condition: (m, p, i) => true,
+                description: 'Rozpoznawanie sofizmatów to trudna umiejętność wymagająca praktyki. Jesteś na początku drogi. To nie porażka — to szansa. Każda kolejna gra będzie lepsza, jeśli będziesz zwracać uwagę na mechanikę zamiast rezultatów.',
+                debateImplication: 'Na debacie będziesz czasem czuć się zagubiony — nie będziesz pewny, czy argument jest ważny czy nie. To normalne. Traktuj każdą debatę jako okazję do nauki.'
+            }
+        ];
+
+        // Meter narratives
+        const METER_NARRATIVES = {
+            merit: {
+                high: { threshold: 80, text: "Twoje analizy są rzetelne. Ludzie cię mogą nie lubić, ale będą cię szanować." },
+                mid: { threshold: 60, text: "Zbalansowane podejście — starasz się łączyć rzetelność z komunikatywnością." },
+                low: { threshold: 40, text: "Tracisz rzetelność. Więcej emocji, mniej danych." },
+                critical: { threshold: 0, text: "Tracisz zdolność do merytorycznego argumentu. To bywa uzależniające — niski wysiłek, wysoki efekt. Ale bez faktów to propaganda." }
+            },
+            popularity: {
+                high: { threshold: 80, text: "Ludzie cię słuchają. Ale za co walczysz — za konkrety czy za prestiż?" },
+                mid: { threshold: 60, text: "Jesteś przekonujący. Ludzie śledzą twoje argumenty." },
+                low: { threshold: 40, text: "Nikt cię nie słucha. Argumenty brzmią jak wykład akademicki." },
+                critical: { threshold: 0, text: "Racja bez słuchaczy to echo w próżni. Musisz nauczyć się komunikować." }
+            },
+            inoculation: {
+                high: { threshold: 80, text: "Rozumiesz manipulację od wewnątrz. To potęga — ale też test etyki." },
+                mid: { threshold: 60, text: "Solidne rozumienie taktyk. Rozpoznajesz triki i rozumiesz, dlaczego działają." },
+                low: { threshold: 40, text: "Wciąż się uczysz. Czasem widzisz sofizmaty tam, gdzie ich nie ma." },
+                critical: { threshold: 0, text: "Nie rozumiesz jeszcze, jak to działa. Spróbuj ponownie." }
+            }
+        };
+
+        // Słownik sofizmatów — terminologia zgodna z: K. Szymanek, "Sztuka argumentacji. Nowy słownik terminologiczny" (PWN, 2021)
+        // Zasada: nazwa łacińska (pełna forma) + polski odpowiednik w nawiasie; gdy brak łacińskiej — nazwa polska + obcojęzyczny odpowiednik
+        // Kolejność: wg kategorii gry (emocje → ataki → zniekształcanie → przyczynowość → tradycja), potem uzupełnienia
+        const FALLACY_DEFINITIONS = [
+            // ── KATEGORIA: Manipulacja emocjami ──
+            { name: "Argumentum ad misericordiam (odwołanie do litości)",
+              description: "Odwoływanie się do współczucia, litości lub cierpienia w celu skłonienia do przyjęcia tezy. Emocje mogą uzupełniać argumentację, ale nie powinny jej zastępować — sam fakt, że ktoś cierpi, nie rozstrzyga o słuszności konkretnego rozwiązania." },
+            { name: "Argumentum ad metum (odwołanie do strachu)",
+              description: "Wywoływanie lęku lub poczucia zagrożenia zamiast przytaczania przesłanek merytorycznych. Często łączy się z przesadzonym scenariuszem katastroficznym, który ma uniemożliwić racjonalną ocenę sytuacji." },
+            { name: "Argumentum ad populum (odwołanie do ludu)",
+              description: "Argument demagogiczny: uzasadnianie tezy tym, że podziela ją większość lub że jest powszechnie akceptowana. Popularność poglądu nie świadczy o jego prawdziwości ani słuszności — 'wszyscy tak myślą' nie jest dowodem." },
+
+            // ── KATEGORIA: Ataki na osobę i autorytet ──
+            { name: "Argumentum ad personam (atak personalny)",
+              description: "Odmiana argumentum ad hominem polegająca na atakowaniu cech osobistych, motywacji lub sytuacji życiowej oponenta zamiast odnoszenia się do treści jego argumentów. Podważa nadawcę, nie treść komunikatu." },
+            { name: "Tu quoque (ty także)",
+              description: "Odmiana argumentum ad hominem polegająca na zarzuceniu oponentowi niekonsekwencji lub hipokryzji: 'sam tak robisz, więc nie masz prawa krytykować'. Nawet jeśli zarzut hipokryzji jest trafny, nie podważa to samego argumentu." },
+            { name: "Argumentum ad verecundiam (nieuprawnione odwołanie do autorytetu)",
+              description: "Powoływanie się na autorytet osoby, która nie jest ekspertem w danej dziedzinie, lub na autorytet bez przytoczenia konkretnych danych. Należy odróżniać od uzasadnionego argumentu z autorytetu, gdzie ekspert wypowiada się w swojej specjalności i podaje weryfikowalne dowody." },
+
+            // ── KATEGORIA: Zniekształcanie argumentów ──
+            { name: "Słomiana kukła (straw man)",
+              description: "Zniekształcenie, uproszczenie lub karykaturalne przedstawienie stanowiska oponenta w celu łatwiejszego zaatakowania. Zamiast polemizować z rzeczywistym argumentem, tworzy się jego wygodniejszą do obalenia wersję." },
+            { name: "Fałszywa alternatywa (fałszywy dylemat)",
+              description: "Sztuczne ograniczenie wyboru do dwóch skrajnych opcji, gdy w rzeczywistości istnieje więcej możliwości. 'Albo jesteś z nami, albo przeciwko nam' — pomija całe spektrum stanowisk pośrednich." },
+            { name: "Selektywne dobieranie dowodów (cherry picking)",
+              description: "Wybieranie wyłącznie tych danych, przykładów lub badań, które potwierdzają z góry przyjętą tezę, przy jednoczesnym pomijaniu danych przeczących. Pozornie obiektywna prezentacja faktów, która w rzeczywistości jest jednostronna." },
+
+            // ── KATEGORIA: Błędy przyczynowe ──
+            { name: "Post hoc ergo propter hoc (po tym, więc wskutek tego)",
+              description: "Błędne wnioskowanie, że skoro zdarzenie B nastąpiło po zdarzeniu A, to A musi być przyczyną B. Następstwo czasowe nie dowodzi związku przyczynowego — korelacja dwóch zjawisk wymaga osobnego uzasadnienia, że jedno rzeczywiście powoduje drugie." },
+            { name: "Argument równi pochyłej (slippery slope)",
+              description: "Twierdzenie, że dopuszczenie A nieuchronnie prowadzi do skrajnie negatywnego Z, bez uzasadnienia, że każde kolejne ogniwo łańcucha przyczynowego rzeczywiście musi nastąpić. Poszczególne kroki mogą być prawdopodobne, ale ich złączenie w nieuchronny ciąg wymaga dowodów." },
+            { name: "Dowód anegdotyczny",
+              description: "Posługiwanie się pojedynczym przypadkiem, osobistym doświadczeniem lub zasłyszaną historią jako dowodem na ogólną tezę. Indywidualne przykłady, choć sugestywne, nie zastępują danych statystycznych opartych na reprezentatywnej próbie." },
+
+            // ── KATEGORIA: Odwołania do tradycji i nowości ──
+            { name: "Argumentum ad antiquitatem (odwołanie do tradycji)",
+              description: "Uzasadnianie słuszności tezy samym faktem jej długiego istnienia lub zakorzenienia w tradycji. Długotrwałość praktyki nie dowodzi jej optymalności — 'zawsze tak robiliśmy' nie jest argumentem za utrzymaniem status quo." },
+            { name: "Argumentum ad novitatem (odwołanie do nowości)",
+              description: "Uzasadnianie wyższości rozwiązania samym faktem, że jest nowe, nowoczesne lub innowacyjne. Nowość nie jest automatycznie lepsza od tradycji — wymaga takiego samego uzasadnienia merytorycznego jak każda inna propozycja." },
+            { name: "Błędna analogia (fałszywa analogia)",
+              description: "Porównanie dwóch sytuacji, które różnią się w istotnych aspektach, i wyciąganie wniosków tak, jakby były analogiczne. Analogia jest wartościowym narzędziem argumentacyjnym, ale wymaga, by podobieństwa dotyczyły cech istotnych dla wniosku." },
+
+            // ── UZUPEŁNIENIA (ważne sofizmaty w debacie o polityce społecznej) ──
+            { name: "Petitio principii (błędne koło, dowodzenie z założenia)",
+              description: "Błąd rozumowania, w którym wniosek jest już — jawnie lub niejawnie — zawarty w przesłankach. Zamiast dowodzić tezy, zakłada się z góry to, co ma być dopiero udowodnione. Często trudny do wykrycia, gdy przesłanka jest przeformułowaną wersją wniosku." },
+            { name: "Czerwony śledzik (red herring)",
+              description: "Celowe wprowadzenie wątku pobocznego, aby odwrócić uwagę od właściwego tematu dyskusji. Zmiana tematu może być subtelna i sprawiać wrażenie powiązania z omawianą kwestią, ale w istocie prowadzi rozmowę na boczny tor." },
+            { name: "Argumentum ad baculum (odwołanie do siły)",
+              description: "Posłużenie się groźbą, zastraszeniem lub przymusem zamiast argumentami merytorycznymi w celu wymuszenia zgody. Obejmuje zarówno groźby bezpośrednie, jak i sugestie negatywnych konsekwencji za niezgadzanie się z nadawcą." }
+        ];
+
+        // Main game app
+        const app = {
+            state: 'loading',
+            data: null,
+            currentCategory: 0,
+            currentScenario: 0,
+            meters: { merit: 0, popularity: 0, inoculation: 0 },
+            badges: {},
+            sessionHistory: [],
+            selectedOption: null,
+            selectedResponse: null,
+
+            init() {
+                this.data = SCENARIOS_DATA;
+                this.categories = this.data.categories;
+                this.initBadges();
+                this.setupEventListeners();
+                this.showNarrativeIntro();
+            },
+
+            initBadges() {
+                this.badges = {};
+                this.categories.forEach(cat => {
+                    this.badges[cat.id] = null;
+                });
+            },
+
+            setupEventListeners() {
+                document.querySelector('.close-modal').addEventListener('click', () => {
+                    this.closeModal();
+                });
+                document.getElementById('help-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'help-modal') this.closeModal();
+                });
+            },
+
+            showNarrativeIntro() {
+                this.state = 'narrative-intro';
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    <div class="narrator-card">
+                        <div class="narrator-header">
+                            <div class="narrator-avatar">EK</div>
+                            <div class="narrator-name">Dr Ewelina Kość</div>
+                        </div>
+                        <p>Dzisiaj Twój pierwszy dzień w Centrum Racjonalnej Debaty. Dr Kość wygląda na zmęczoną.</p>
+                        <p>„Mamy problem — ludzie już nie wierzą, że czyjeś argumenty są oparte na faktach. Wszyscy uważają, że każdy mówi nieprawdę dla własnej korzyści. To tworzy głęboką nieufność do debaty publicznej.</p>
+                        <p>Ale jest też szansa. Jeśli nauczymy ludzi rozpoznawać mechanizmy manipulacji, mogą się przed nią bronić. Chcę, żebyś przeanalizował pięć głównych kategorii sofizmatów w polityce społecznej. Poznaj je — zarówno od strony tego, kto próbuje manipulować, jak i tego, kto chce się przed manipulacją bronić."</p>
+                        <p>Zawiesza głos.</p>
+                        <p>„To nie będzie teoretyczne ćwiczenie. Im bardziej wprawisz się w sztukę manipulacji, tym bardziej zrozumiesz jej potęgę. Ufam, że pamiętasz — wiedza o tym, jak działają sofizmaty, to nie pozwolenie na ich używanie. To odpowiedzialność."</p>
+                        <p>Celem gry nie jest nauczenie cię być lepszym manipulatorem. Celem jest nauczenie cię rozpoznawać manipulację — zarówno u innych, jak i u siebie.</p>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="app.startGame()">Zaczynam analizę</button>
+                        <button class="btn-secondary" onclick="app.showFallacies()">Słownik Sofizmatów</button>
+                    </div>
+                `;
+            },
+
+            startGame() {
+                this.currentCategory = 0;
+                this.currentScenario = 0;
+                this.showCategoryIntro();
+            },
+
+            showCategoryIntro() {
+                this.state = 'category-intro';
+                const category = this.categories[this.currentCategory];
+                const narrative = CHAPTER_NARRATIVES[category.id];
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    <div class="narrator-card">
+                        <div class="narrator-header">
+                            <div class="narrator-avatar">EK</div>
+                            <div class="narrator-name">Dr Ewelina Kość</div>
+                        </div>
+                        <p>${narrative.openingBriefing.split('\n\n').join('</p><p>')}</p>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="app.startCategory()">Przystąpić do scenariuszy</button>
+                        <button class="btn-secondary" onclick="app.showFallacies()">Słownik Sofizmatów</button>
+                    </div>
+                `;
+            },
+
+            startCategory() {
+                this.currentScenario = 0;
+                this.showScenarioBriefing();
+            },
+
+            showScenarioBriefing() {
+                this.state = 'scenario-briefing';
+                const category = this.categories[this.currentCategory];
+                const scenario = category.scenarios[this.currentScenario];
+
+                let briefingText = "";
+                if (scenario.mode === 'detective') {
+                    briefingText = "Monitorujemy tę debatę. Przeczytaj poniższy argument i zidentyfikuj sofizmat. Potem zaproponuj odpowiedź — merytoryczną, erystyczną, lub... sofizmatyczną. Wybór należy do ciebie.";
+                } else if (scenario.mode === 'spin-doctor') {
+                    briefingText = "Teraz się zamieniamy. Wcielasz się w doradcę komunikacyjnego. Nie osądzamy intencji — obserwujemy mechanikę. Jak się pisze przekaz, który konwertuje ludzi na stronę kontrowersyjnej decyzji? Wybierz taktykę i obserwuj skutki.";
+                } else if (scenario.mode === 'context-judge') {
+                    briefingText = "Nie każde odwołanie do emocji to sofizmat. Nie każde odwołanie do tradycji to ślepota. Przeanalizuj poniższy argument. Czy jest on sofizmatem, czy uzasadnionym argumentem w tym kontekście? To będzie najtrudniej — ale to też będzie najważniejsze.";
+                }
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="narrator-card">
+                        <div class="narrator-header">
+                            <div class="narrator-avatar">EK</div>
+                            <div class="narrator-name">Dr Ewelina Kość</div>
+                        </div>
+                        <p>${briefingText}</p>
+                    </div>
+                    <div class="card">
+                        <h3>Kontekst:</h3>
+                        <p>${scenario.context || scenario.briefing || ''}</p>
+                        <h3>Temat:</h3>
+                        <p><strong>${scenario.topic}</strong></p>
+                        <h3>Dziedzina:</h3>
+                        <p>${scenario.domain}</p>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="app.showScenario()">Przejdź do scenariusza</button>
+                    </div>
+                `;
+            },
+
+            showScenario() {
+                const category = this.categories[this.currentCategory];
+                const scenario = category.scenarios[this.currentScenario];
+
+                if (scenario.mode === 'detective') {
+                    this.showDetectiveScenario();
+                } else if (scenario.mode === 'spin-doctor') {
+                    this.showSpinDoctorScenario();
+                } else if (scenario.mode === 'context-judge') {
+                    this.showContextJudgeScenario();
+                }
+            },
+
+            showDetectiveScenario() {
+                this.state = 'detective-identify';
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+
+                // Generate and CACHE options only once per scenario
+                if (!this._cachedDetectiveOptions || this._cachedDetectiveScenarioId !== scenario.id) {
+                    const allFallacies = this.getAllFallacies();
+                    const correctFallacy = scenario.fallacy;
+                    let opts = [correctFallacy];
+                    const distractors = allFallacies.filter(f => f !== correctFallacy).sort(() => Math.random() - 0.5).slice(0, 2);
+                    opts = [...opts, ...distractors].sort(() => Math.random() - 0.5);
+                    this._cachedDetectiveOptions = opts;
+                    this._cachedDetectiveScenarioId = scenario.id;
+                }
+                const options = this._cachedDetectiveOptions;
+                const correctFallacy = scenario.fallacy;
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Identyfikacja Sofizmatu</h2>
+                        <h3>Argument:</h3>
+                        <div class="context-box">
+                            <p>"${scenario.argument}"</p>
+                        </div>
+                        <h3>Jaki to sofizmat?</h3>
+                        <div class="options">
+                            ${options.map((opt, i) => `
+                                <div class="option ${this.selectedOption === i ? 'selected' : ''}" onclick="app.selectOption(${i})">
+                                    <div class="option-label">${String.fromCharCode(65 + i)}. ${opt}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.submitFallacyChoice()" ${this.selectedOption === null ? 'disabled' : ''}>Potwierdź</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            showSpinDoctorScenario() {
+                this.state = 'spin-doctor-briefing';
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Spin Doctor - Wybór Taktyki</h2>
+                        <h3>Decyzja do „sprzedania":</h3>
+                        <div class="context-box">
+                            <p><strong>${scenario.topic}</strong></p>
+                            <p>${scenario.briefing}</p>
+                        </div>
+                        <h3>Wybierz taktykę komunikacyjną:</h3>
+                        <div class="options">
+                            ${scenario.options.map((option, i) => `
+                                <div class="option ${this.selectedOption === i ? 'selected' : ''}" onclick="app.selectOption(${i})">
+                                    <div class="option-label">${String.fromCharCode(65 + i)}. ${option.technique}</div>
+                                    <div class="option-text">${option.text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.submitSpinDoctorChoice()" ${this.selectedOption === null ? 'disabled' : ''}>Wybierz</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            showContextJudgeScenario() {
+                this.state = 'context-judge-present';
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+
+                const content = document.getElementById('app-content');
+                const contextFactorsHtml = scenario.contextFactors && scenario.contextFactors.length > 0
+                    ? `<h3>Czynniki kontekstowe:</h3><ul>${scenario.contextFactors.map(f => `<li>${f}</li>`).join('')}</ul>`
+                    : '';
+
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Sędzia Kontekstu - Osąd</h2>
+                        <h3>Argument:</h3>
+                        <div class="context-box">
+                            <p>"${scenario.argument}"</p>
+                        </div>
+                        ${contextFactorsHtml}
+                        <h3>Czy to sofizmat, czy uzasadniony argument?</h3>
+                        <div class="options">
+                            <div class="option ${this.selectedOption === 0 ? 'selected' : ''}" onclick="app.selectOption(0)">
+                                <div class="option-label">A. To sofizmat</div>
+                            </div>
+                            <div class="option ${this.selectedOption === 1 ? 'selected' : ''}" onclick="app.selectOption(1)">
+                                <div class="option-label">B. To uzasadniony argument</div>
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.submitContextJudgeChoice()" ${this.selectedOption === null ? 'disabled' : ''}>Wyślij osąd</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            selectOption(index) {
+                this.selectedOption = index;
+                // Update selection highlights directly (no re-render to avoid reshuffling)
+                document.querySelectorAll('.option').forEach((opt, i) => {
+                    opt.classList.toggle('selected', i === index);
+                });
+                // Enable the submit button
+                const submitBtn = document.querySelector('.btn-primary');
+                if (submitBtn) submitBtn.disabled = false;
+            },
+
+            submitFallacyChoice() {
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+                const correctFallacy = scenario.fallacy;
+                const options = this._cachedDetectiveOptions;
+                const selectedFallacy = options[this.selectedOption];
+                const isCorrect = selectedFallacy === correctFallacy;
+
+                this.state = 'detective-feedback';
+                this.selectedOption = null;
+
+                // Log and update meters
+                if (isCorrect) {
+                    this.meters.inoculation += 5;
+                    this.meters.merit += 3;
+                } else {
+                    this.meters.inoculation += 2;
+                }
+
+                this.sessionHistory.push({
+                    type: 'detective',
+                    scenario: scenario.id,
+                    correct: isCorrect,
+                    selected: selectedFallacy,
+                    correct_answer: correctFallacy
+                });
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>${isCorrect ? 'Poprawnie!' : 'Niepoprawnie'}</h2>
+                        <p>${isCorrect ? 'Zidentyfikowałeś sofizmat.' : `Wybrałeś "${selectedFallacy}", ale to jest "${correctFallacy}".`}</p>
+                        <div class="context-box">
+                            <p><strong>Wyjaśnienie:</strong> ${scenario.fallacyExplanation}</p>
+                        </div>
+                        <h3>Jak na to odpowiedzieć?</h3>
+                        <p>Teraz zaproponuj odpowiedź na ten argument.</p>
+                        <div class="options">
+                            ${Object.entries(scenario.responses).map(([key, resp], i) => {
+                                const typeLabels = { substantive: 'Merytoryczna', eristic: 'Erystyczna', fallacious: 'Sofizmatyczna' };
+                                return `
+                                    <div class="option ${this.selectedResponse === i ? 'selected' : ''}" onclick="app.selectResponse(${i})">
+                                        <div class="option-label">${String.fromCharCode(65 + i)}. ${typeLabels[key] || key}</div>
+                                        <div class="option-text">${resp.text}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.submitDetectiveResponse()" ${this.selectedResponse === null ? 'disabled' : ''}>Wyślij odpowiedź</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            selectResponse(index) {
+                this.selectedResponse = index;
+                // Update selection highlights directly
+                document.querySelectorAll('.option').forEach((opt, i) => {
+                    opt.classList.toggle('selected', i === index);
+                });
+                // Enable the submit button
+                const submitBtn = document.querySelector('.btn-primary');
+                if (submitBtn) submitBtn.disabled = false;
+            },
+
+            submitDetectiveResponse() {
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+                const responseEntries = Object.entries(scenario.responses);
+                const [responseKey, response] = responseEntries[this.selectedResponse];
+
+                this.state = 'detective-result';
+                this.selectedResponse = null;
+
+                // Apply score changes (all three KPIs, always sum to 30)
+                this.meters.merit += response.merit;
+                this.meters.popularity += response.popularity;
+                this.meters.inoculation += (response.inoculation || 0);
+
+                const typeLabels = { substantive: 'Merytoryczna', eristic: 'Erystyczna', fallacious: 'Sofizmatyczna' };
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Efekt Twojej Odpowiedzi</h2>
+                        <p><strong>Wybrałeś: ${typeLabels[responseKey] || responseKey}</strong></p>
+                        <p>${response.explanation}</p>
+                        <h3>Skutki:</h3>
+                        <div class="stats">
+                            ${response.merit ? `<div class="stat"><div class="stat-value">+${response.merit}</div><div class="stat-label">Rzetelność</div></div>` : ''}
+                            ${response.popularity ? `<div class="stat"><div class="stat-value">+${response.popularity}</div><div class="stat-label">Popularność</div></div>` : ''}
+                            ${response.inoculation ? `<div class="stat"><div class="stat-value">+${response.inoculation}</div><div class="stat-label">Odporność</div></div>` : ''}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.nextScenario()">Następny scenariusz</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            submitSpinDoctorChoice() {
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+                const option = scenario.options[this.selectedOption];
+
+                this.state = 'spin-doctor-result';
+                this.selectedOption = null;
+
+                // All three KPIs sum to 30 per choice
+                this.meters.merit += option.meritDamage;
+                this.meters.popularity += option.popularityGain;
+                this.meters.inoculation += option.inoculationGain;
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Skuteczność Taktyki</h2>
+                        <p><strong>Użyta taktyka: ${option.technique}</strong></p>
+                        <p>${option.expertDebunking}</p>
+                        <h3>Skutki:</h3>
+                        <div class="stats">
+                            ${option.meritDamage ? `<div class="stat"><div class="stat-value">+${option.meritDamage}</div><div class="stat-label">Rzetelność</div></div>` : ''}
+                            ${option.popularityGain ? `<div class="stat"><div class="stat-value">+${option.popularityGain}</div><div class="stat-label">Popularność</div></div>` : ''}
+                            ${option.inoculationGain ? `<div class="stat"><div class="stat-value">+${option.inoculationGain}</div><div class="stat-label">Odporność</div></div>` : ''}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.nextScenario()">Następny scenariusz</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            submitContextJudgeChoice() {
+                const scenario = this.categories[this.currentCategory].scenarios[this.currentScenario];
+                const playerChosenSophism = this.selectedOption === 0;
+                const actuallyIsSophism = scenario.isActuallySophism;
+                const isCorrect = playerChosenSophism === actuallyIsSophism;
+
+                this.state = 'context-judge-result';
+                this.selectedOption = null;
+
+                // Apply KPI based on correctness (correct=30pts, incorrect=20pts)
+                const kpi = isCorrect
+                    ? (scenario.kpiCorrect || {merit: 12, popularity: 8, inoculation: 10})
+                    : (scenario.kpiIncorrect || {merit: 4, popularity: 12, inoculation: 4});
+                this.meters.merit += kpi.merit;
+                this.meters.popularity += kpi.popularity;
+                this.meters.inoculation += kpi.inoculation;
+
+                const verdict = playerChosenSophism ? 'To sofizmat' : 'To uzasadniony argument';
+                const feedback = isCorrect
+                    ? (playerChosenSophism ? scenario.ifCalledSophism : scenario.ifCalledLegitimate)
+                    : (playerChosenSophism ? scenario.ifCalledLegitimate : scenario.ifCalledSophism);
+
+                const contextFactorsHtml = scenario.contextFactors && scenario.contextFactors.length > 0
+                    ? `<h3>Czynniki kontekstowe:</h3><ul>${scenario.contextFactors.map(f => `<li>${f}</li>`).join('')}</ul>`
+                    : '';
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>${isCorrect ? 'Poprawnie!' : 'Niepoprawnie'}</h2>
+                        <p><strong>Twój osąd: ${verdict}</strong></p>
+                        <p>${feedback}</p>
+                        <h3>Wyjaśnienie:</h3>
+                        <div class="context-box">
+                            <p>${scenario.explanation}</p>
+                        </div>
+                        ${contextFactorsHtml}
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.nextScenario()">Następny scenariusz</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            nextScenario() {
+                this.currentScenario++;
+                const category = this.categories[this.currentCategory];
+
+                if (this.currentScenario < category.scenarios.length) {
+                    this.showScenarioBriefing();
+                } else {
+                    this.showCategoryCompletion();
+                }
+            },
+
+            showCategoryCompletion() {
+                this.state = 'next-in-category';
+                const category = this.categories[this.currentCategory];
+                const narrative = CHAPTER_NARRATIVES[category.id];
+
+                // Calculate badge (use normalized scores)
+                const avgScore = (this.normalizeScore(this.meters.merit) + this.normalizeScore(this.meters.inoculation)) / 2;
+                let badge = null;
+                if (avgScore >= 80) badge = 'gold';
+                else if (avgScore >= 65) badge = 'silver';
+                else badge = 'bronze';
+
+                this.badges[category.id] = badge;
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Kategoria ukończona: ${category.name}</h2>
+                        <h3>Twoja odznaka:</h3>
+                        <div class="badges">
+                            <span class="badge ${badge}">🏆 ${badge.toUpperCase()}</span>
+                        </div>
+                        <p>${narrative.closingMessages[badge]}</p>
+                        ${narrative.transitionMessage ? `<p><em>${narrative.transitionMessage}</em></p>` : ''}
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="app.nextCategory()">Następna kategoria</button>
+                    </div>
+                `;
+            },
+
+            nextCategory() {
+                this.currentCategory++;
+                if (this.currentCategory < this.categories.length) {
+                    this.showCategoryIntro();
+                } else {
+                    this.showEndGame();
+                }
+            },
+
+            showEndGame() {
+                this.state = 'end-game-profile';
+
+                const profile = this.getPlayerProfile();
+                const reflection = this.getEndGameReflection();
+
+                const content = document.getElementById('app-content');
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="profile-card">
+                        <div class="profile-icon">${profile.icon}</div>
+                        <h2>${profile.name}</h2>
+                        <p><strong>${profile.description}</strong></p>
+                        <p>${profile.debateImplication}</p>
+                    </div>
+                    <div class="narrator-card">
+                        <div class="narrator-header">
+                            <div class="narrator-avatar">EK</div>
+                            <div class="narrator-name">Dr Ewelina Kość</div>
+                        </div>
+                        <p><strong>${reflection}</strong></p>
+                        <p>Przeszedłeś przez pięć kategorii. Teraz wiesz, jak działa manipulacja — od emocji, przez ataki, zniekształcenia, błędy przyczynowe, aż do tradycji.</p>
+                        <p>Ale wiesz też coś innego. Że każdy z tych \"sofizmatów\" czasami ma potencjał bycia argumentem uzasadnionym. Emocje mogą być ważne — jeśli są poparte danymi. Autorytet może być istotny — jeśli jest rzeczywiście ekspertem. Tradycja może być mądrością — jeśli została przetestowana.</p>
+                        <p>To co ostatecznie decyduje: kontekst. Dane. Uczciwość. Chęć zrozumienia oponenta, zamiast tylko jego pokonania.</p>
+                        <p>To są narzędzia. To, co z nimi zrobisz, to Twoja odpowiedzialność.</p>
+                    </div>
+                    <div class="buttons">
+                        <button class="btn-primary" onclick="app.showSessionStats()">Podsumowanie sesji</button>
+                        <button class="btn-secondary" onclick="app.showNarrativeIntro()">Nowa gra</button>
+                    </div>
+                `;
+            },
+
+            showSessionStats() {
+                const content = document.getElementById('app-content');
+                const detectives = this.sessionHistory.filter(h => h.type === 'detective').length;
+                const correctDetectives = this.sessionHistory.filter(h => h.type === 'detective' && h.correct).length;
+
+                content.innerHTML = `
+                    ${this.renderMeters()}
+                    <div class="card">
+                        <h2>Podsumowanie Sesji</h2>
+                        <h3>Statystyki:</h3>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${detectives}</div>
+                                <div class="stat-label">Scenariusze</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${correctDetectives}/${detectives}</div>
+                                <div class="stat-label">Poprawne</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${Math.round(correctDetectives/detectives*100)}%</div>
+                                <div class="stat-label">Trafność</div>
+                            </div>
+                        </div>
+                        <h3>Zdobyte odznaki:</h3>
+                        <div class="badges">
+                            ${Object.entries(this.badges).map(([catId, badge]) => {
+                                if (!badge) return '';
+                                const cat = this.categories.find(c => c.id === catId);
+                                return `<span class="badge ${badge}">🏆 ${cat.name}</span>`;
+                            }).join('')}
+                        </div>
+                        <div class="buttons">
+                            <button class="btn-primary" onclick="app.showNarrativeIntro()">Nowa gra</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            getPlayerProfile() {
+                const m = this.normalizeScore(this.meters.merit);
+                const p = this.normalizeScore(this.meters.popularity);
+                const i = this.normalizeScore(this.meters.inoculation);
+
+                for (const profile of PLAYER_PROFILES) {
+                    if (profile.condition(m, p, i)) {
+                        return profile;
+                    }
+                }
+                return PLAYER_PROFILES[PLAYER_PROFILES.length - 1];
+            },
+
+            getEndGameReflection() {
+                const m = this.normalizeScore(this.meters.merit);
+                const p = this.normalizeScore(this.meters.popularity);
+                const i = this.normalizeScore(this.meters.inoculation);
+
+                if (m >= 75 && i >= 75) {
+                    return "Wiesz, jak działa manipulacja — i wiesz, jak jej nie używać. Twoje analizy będą budować fundamenty racjonalnej debaty. To długi proces, ale czymś trzeba zacząć. Gratulacje.";
+                }
+                if (m >= 60 && p < 80) {
+                    return "Wybrałeś trudną drogę. Niewielu podąża za tobą. Ale twoja analiza jest rzetelna. To ma wartość — czasami długotrwałą, nawet jeśli niewidoczną teraz.";
+                }
+                if (m <= 42 && p >= 90) {
+                    return "Rozumiesz, jak zdobywać uwagę i wpływ. Ale zastanów się: czy to taki sukces, gdy zdobywasz go kosztem prawdy? Wciąż masz czas, żeby zmienić podejście.";
+                }
+                if (m >= 45 && i >= 70) {
+                    return "Moi najlepsi analitycy to ci, którzy rozumieją manipulację od wewnątrz. Teraz zmień perspektywę: jak tę wiedzę wykorzystać, żeby ludzi bronić, zamiast ich oszukiwać?";
+                }
+                if (m >= 45) {
+                    return "Znalazłeś równowagę — przynajmniej na razie. To trudne. Będzie wymagać ciągłej adaptacji bez utraty rdzenia.";
+                }
+                return "To było pierwsze przybliżenie. Analiza sofizmatów to umiejętność, którą się rozwija. Wróć do wybranej kategorii — próbuj innego podejścia. Nie ma ideału — jest tylko pragmatyzm połączony z etyką.";
+            },
+
+            // Normalize raw meter value to 0-100 scale
+            normalizeScore(raw) {
+                return Math.min(100, Math.round(raw / 3));
+            },
+
+            renderMeters() {
+                const nm = this.normalizeScore(this.meters.merit);
+                const np = this.normalizeScore(this.meters.popularity);
+                const ni = this.normalizeScore(this.meters.inoculation);
+                return `
+                    <div class="meters">
+                        <div class="meter merit">
+                            <div class="meter-label">Rzetelność</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: ${nm}%"></div>
+                            </div>
+                            <div class="meter-value">${nm}</div>
+                        </div>
+                        <div class="meter popularity">
+                            <div class="meter-label">Popularność</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: ${np}%"></div>
+                            </div>
+                            <div class="meter-value">${np}</div>
+                        </div>
+                        <div class="meter inoculation">
+                            <div class="meter-label">Odporność</div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: ${ni}%"></div>
+                            </div>
+                            <div class="meter-value">${ni}</div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            showFallacies() {
+                const modal = document.getElementById('help-modal');
+                const list = document.getElementById('fallacies-list');
+
+                list.innerHTML = FALLACY_DEFINITIONS.map(fallacy => `
+                    <div class="fallacy-item">
+                        <div class="fallacy-name">${fallacy.name}</div>
+                        <div class="fallacy-description">${fallacy.description}</div>
+                    </div>
+                `).join('');
+
+                modal.classList.add('active');
+            },
+
+            closeModal() {
+                document.getElementById('help-modal').classList.remove('active');
+            },
+
+            getAllFallacies() {
+                const fallacies = new Set();
+                this.categories.forEach(cat => {
+                    cat.fallacies.forEach(f => fallacies.add(f));
+                });
+                return Array.from(fallacies);
+            },
+
+            // getDetectiveOptions removed — options are now cached in showDetectiveScenario
+
+            // render() removed — selectOption/selectResponse update DOM directly to avoid re-shuffle bugs
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
